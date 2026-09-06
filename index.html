@@ -264,6 +264,20 @@
         align-items: center;
         justify-content: center;
       }
+      #lockStage.active {
+        display: flex;
+      }
+      #lockStage {
+        align-items: center;
+        justify-content: center;
+      }
+      #lockInput {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        height: 0;
+        width: 0;
+      }
       .pin-box {
         text-align: center;
       }
@@ -342,6 +356,38 @@
       #termStage {
         padding: 24px 34px;
       }
+      #termStage.mode-calm {
+        background: radial-gradient(
+          circle at 18% 12%,
+          #13202a 0,
+          #080d12 42%,
+          #05070a 100%
+        );
+      }
+      #termStage.mode-missing {
+        background: radial-gradient(
+          circle at 80% 18%,
+          #24102c 0,
+          #0d0814 42%,
+          #05050a 100%
+        );
+      }
+      #termStage.mode-anniversary {
+        background: radial-gradient(
+          circle at 50% 8%,
+          #302414 0,
+          #120d08 42%,
+          #070604 100%
+        );
+      }
+      #termStage.mode-happy {
+        background: radial-gradient(
+          circle at 22% 18%,
+          #123126 0,
+          #071712 42%,
+          #040907 100%
+        );
+      }
       .term-banner {
         display: inline-flex;
         gap: 16px;
@@ -369,6 +415,25 @@
       .term-banner-text .l2 {
         color: var(--dim);
         font-size: 16px;
+      }
+      .term-live-status {
+        color: var(--ok);
+        font-size: 14px;
+        margin-top: 6px;
+      }
+      .term-mode-status {
+        color: var(--violet);
+        font-size: 13px;
+        margin-top: 3px;
+      }
+      #termStage.mode-missing .term-banner {
+        border-color: var(--pink);
+      }
+      #termStage.mode-anniversary .term-banner {
+        border-color: var(--gold);
+      }
+      #termStage.mode-happy .term-banner {
+        border-color: var(--ok);
       }
       .term-meta {
         color: var(--dim);
@@ -715,6 +780,7 @@
       .video-wrap {
         max-width: 700px;
         margin-top: 10px;
+        white-space: normal;
       }
       video {
         width: 100%;
@@ -847,6 +913,33 @@
       </div>
     </div>
 
+    <!-- TERMINAL LOCK -->
+    <div id="lockStage" class="stage">
+      <div class="pin-box">
+        <div class="pin-title">NISA-OS</div>
+        <div class="pin-sub">ENTER ACCESS CODE</div>
+        <div class="pin-dots" id="lockDots">
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+        </div>
+        <input
+          id="lockInput"
+          type="tel"
+          inputmode="numeric"
+          maxlength="8"
+          autocomplete="off"
+          aria-label="Unlock PIN"
+        />
+        <div class="pin-error" id="lockError"></div>
+      </div>
+    </div>
+
     <!-- TERMINAL -->
     <div id="termStage" class="stage">
       <div class="term-banner">
@@ -856,6 +949,7 @@
         <div class="term-banner-text">
           <div class="l1">NISA OS release 4.0 (hudzaifah-derived)</div>
           <div class="l2">Kernel LOVE 2.6 on an i-love-you</div>
+          <div class="term-live-status" id="termLiveStatus"></div>
         </div>
       </div>
       <div class="term-meta" id="lastLogin"></div>
@@ -1340,6 +1434,9 @@
       const pinDots = document.querySelectorAll(".pin-dot");
       const pinError = document.getElementById("pinError");
       const pinBox = document.querySelector(".pin-box");
+      const lockInput = document.getElementById("lockInput");
+      const lockError = document.getElementById("lockError");
+      const lockDots = document.querySelectorAll("#lockDots .pin-dot");
       let pinValue = "";
 
       function showPinStage() {
@@ -1386,10 +1483,50 @@
         }
       }
 
+      function lockTerminal() {
+        if (CURRENT_STAGE !== "terminal" || inputMode !== "command") return;
+        if (cmdInput.value !== "") return;
+        showStage("lockStage", "lock");
+        lockInput.value = "";
+        lockError.textContent = "";
+        lockDots.forEach((dot) => dot.classList.remove("filled"));
+        lockInput.focus();
+      }
+
+      function unlockTerminal() {
+        lockInput.value = "";
+        lockError.textContent = "";
+        showStage("termStage", "terminal");
+        resizeTermPlasma();
+        updateTermLiveStatus();
+        cmdInput.focus();
+      }
+
+      lockInput.addEventListener("input", () => {
+        lockInput.value = lockInput.value.replace(/\D/g, "").slice(0, 8);
+        lockDots.forEach((dot, i) =>
+          dot.classList.toggle("filled", i < lockInput.value.length),
+        );
+        if (lockInput.value.length !== 8) return;
+        if (lockInput.value === PIN) {
+          lockError.style.color = "var(--ok)";
+          lockError.textContent = "ACCESS RESTORED";
+          setTimeout(unlockTerminal, 500);
+        } else {
+          lockError.style.color = "var(--danger)";
+          lockError.textContent = "ACCESS DENIED";
+          lockInput.value = "";
+          lockDots.forEach((dot) => dot.classList.remove("filled"));
+        }
+      });
+
       /* ============ TERMINAL STAGE ============ */
       function enterTerminal() {
         showStage("termStage", "terminal");
         resizeTermPlasma();
+        clearInterval(liveStatusTimer);
+        updateTermLiveStatus();
+        liveStatusTimer = setInterval(updateTermLiveStatus, 1000);
         document.getElementById("lastLogin").textContent =
           "Last login: " + new Date().toString().slice(0, 24) + " on tty-heart";
         printLine(
@@ -1402,8 +1539,25 @@
 
       const screen = document.getElementById("screen");
       const cmdInput = document.getElementById("cmdInput");
+      const termLiveStatus = document.getElementById("termLiveStatus");
       const PROMPT_TEXT = "/home/hudzaifah(nisa) » ";
       let inputMode = "command"; // 'command' | 'quiz' | 'sudoPassword'
+      let liveStatusTimer = null;
+
+      function updateTermLiveStatus() {
+        const elapsed = Math.max(0, new Date() - ANNIV_DATE);
+        const totalSeconds = Math.floor(elapsed / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = String(
+          Math.floor((totalSeconds % 86400) / 3600),
+        ).padStart(2, "0");
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(
+          2,
+          "0",
+        );
+        const seconds = String(totalSeconds % 60).padStart(2, "0");
+        termLiveStatus.textContent = `LOVE CORE: ONLINE  |  TOGETHER: ${days}D ${hours}:${minutes}:${seconds}`;
+      }
 
       const termPlasma = document.getElementById("termPlasma");
       const termPlasmaCtx = termPlasma.getContext("2d");
@@ -1693,13 +1847,12 @@
         },
         video: () => {
           printHTML(`
-      <div class="section-title">VIDEO KENANGAN</div>
+      <div class="section-title">VIDEO PENJELASAN MAKE TIME</div>
       <div class="video-wrap">
         <video controls>
           <source src="assets/video-1.mp4" type="video/mp4">
           Browser kamu tidak mendukung pemutaran video.
         </video>
-        <p class="dim" style="font-size:17px; margin-top:6px;">assets/video-1.mp4 — pastikan file sudah ada di folder assets.</p>
       </div>
     `);
         },
@@ -2580,6 +2733,20 @@
           if (e.key === "Escape") {
             e.preventDefault();
             closeCmosDetail();
+          }
+          return;
+        }
+
+        if (CURRENT_STAGE === "terminal") {
+          if (
+            e.key.toLowerCase() === "l" &&
+            !e.ctrlKey &&
+            !e.altKey &&
+            !e.metaKey &&
+            cmdInput.value === ""
+          ) {
+            e.preventDefault();
+            lockTerminal();
           }
           return;
         }
