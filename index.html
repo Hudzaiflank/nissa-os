@@ -950,11 +950,13 @@
           <div class="l1">NISA OS release 4.0 (hudzaifah-derived)</div>
           <div class="l2">Kernel LOVE 2.6 on an i-love-you</div>
           <div class="term-live-status" id="termLiveStatus"></div>
+          <div class="term-mode-status" id="termProgressStatus"></div>
         </div>
       </div>
       <div class="term-meta" id="lastLogin"></div>
       <div class="term-hint">
         Ketik <b>help</b> untuk daftar perintah &middot; Ctrl+C untuk batal
+        &middot; F12 untuk kembali ke BIOS
       </div>
       <div id="screen"></div>
       <div id="inputRow">
@@ -984,6 +986,203 @@
       const PARTNER_FULL_NAME = "Anisa Dwiasmara Edi Prabowo";
       const PARTNER_NAME = "Nisa";
       const PHOTO_COUNT = 25;
+
+      /* ============ UNIFIED PROGRESS TRACKER ============ */
+      // Tracks every "explorable" thing in the OS: the 6 known secret
+      // commands, every CMOS detail screen, every photo, and the video.
+      // Everything lives as prefixed keys in one array so one overall
+      // percentage can be computed across all of them.
+      const KNOWN_SECRETS = ["hack", "scan", "matrix", "decrypt", "ping", "sudo"];
+      // Ordinary commands that now also count toward progress the moment
+      // they're run. 'video' isn't listed here because it already has its
+      // own dedicated "video:1" key; 'delete-local' is intentionally never
+      // counted since it resets progress rather than being progress.
+      const ORDINARY_COMMANDS = [
+        "help",
+        "whoami",
+        "anniv",
+        "letter",
+        "photos",
+        "clear",
+        "quiz",
+        "progress",
+      ];
+      const PROGRESS_STORAGE_KEY = "nisaos_progress";
+      function loadProgress() {
+        try {
+          return JSON.parse(localStorage.getItem(PROGRESS_STORAGE_KEY) || "[]");
+        } catch (e) {
+          return [];
+        }
+      }
+      function saveProgress(arr) {
+        try {
+          localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(arr));
+        } catch (e) {}
+      }
+      let foundItems = loadProgress();
+      // one-time migration from the old secrets-only tracker, if present
+      (function migrateOldSecrets() {
+        try {
+          const old = JSON.parse(localStorage.getItem("nisaos_secrets") || "null");
+          if (old && Array.isArray(old)) {
+            let changed = false;
+            old.forEach((name) => {
+              const key = "secret:" + name;
+              if (!foundItems.includes(key)) {
+                foundItems.push(key);
+                changed = true;
+              }
+            });
+            if (changed) saveProgress(foundItems);
+            localStorage.removeItem("nisaos_secrets");
+          }
+        } catch (e) {}
+      })();
+      function markFound(key) {
+        if (foundItems.includes(key)) return false;
+        foundItems.push(key);
+        saveProgress(foundItems);
+        return true;
+      }
+      function isFound(key) {
+        return foundItems.includes(key);
+      }
+      // cmosLeft/cmosRight are declared further down the file, but this is
+      // only ever invoked after the whole script has already run once, so
+      // they're guaranteed to be initialized by then.
+      function getCmosTotal() {
+        return cmosLeft
+          .concat(cmosRight)
+          .reduce((sum, item) => sum + item.sub.length, 0);
+      }
+      function getProgressTotals() {
+        const total =
+          getCmosTotal() +
+          PHOTO_COUNT +
+          1 +
+          KNOWN_SECRETS.length +
+          ORDINARY_COMMANDS.length;
+        const foundCount = foundItems.filter(
+          (k) => k !== "secret:konami",
+        ).length;
+        const percent = total > 0 ? Math.round((foundCount / total) * 100) : 0;
+        return { total, foundCount, percent };
+      }
+
+      /* ============ KONAMI CODE (hidden, not listed anywhere) ============ */
+      const KONAMI_SEQUENCE = [
+        "ArrowUp",
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowLeft",
+        "ArrowRight",
+        "b",
+        "a",
+      ];
+      let konamiBuffer = [];
+      function triggerKonami() {
+        beepBoot();
+        printLine("");
+        printLine("\u2191\u2191\u2193\u2193\u2190\u2192\u2190\u2192BA", "gold");
+        printLine("* KODE RAHASIA DIKENALI...", "ok");
+        printHTML(`
+        <div style="text-align:center; padding:20px; border:2px dashed var(--pink); margin:10px 0; background:rgba(255,122,184,0.05);">
+          <div style="font-size:15px; color:var(--dim); letter-spacing:2px; margin-bottom:10px;">HIDDEN UNLOCK</div>
+          <div style="font-family:'VT323',monospace; font-size:26px; color:var(--pink); line-height:1.4;">
+            Kalau kamu nemuin ini, berarti kamu emang niat banget explore semuanya.<br>
+            Itu... sangat "kamu banget". Dan itu salah satu alasan aku sayang kamu.
+          </div>
+        </div>
+      `);
+        printLine("");
+        announceIfNewSecret("konami");
+      }
+
+      // Call after a secret command's own output has finished, so the
+      // announcement always appears at the end, not interrupting the reveal.
+      function announceIfNewSecret(name) {
+        const isNew = markFound("secret:" + name);
+        if (!isNew) return;
+        const foundKnown = KNOWN_SECRETS.filter((s) =>
+          isFound("secret:" + s),
+        ).length;
+        beepSuccess();
+        printLine("");
+        printLine(
+          `* RAHASIA BARU DITEMUKAN (${foundKnown}/${KNOWN_SECRETS.length})`,
+          "gold",
+        );
+        if (foundKnown === KNOWN_SECRETS.length && !isFound("secret:konami")) {
+          printLine(
+            "* Semua command rahasia sudah ketemu... tapi masih ada satu lagi yang jauh lebih tersembunyi. ;)",
+            "violet",
+          );
+        }
+        if (name === "konami") {
+          printLine(
+            "* Kamu nemuin rahasia paling tersembunyi di sistem ini. \u2665",
+            "pink",
+          );
+        }
+        printLine("");
+      }
+
+      /* ============ AUDIO ============ */
+      let audioContext = null;
+      function getAudioContext() {
+        if (!audioContext) {
+          audioContext = new (
+            window.AudioContext || window.webkitAudioContext
+          )();
+        }
+        return audioContext;
+      }
+      function beep(frequency = 800, duration = 100, volume = 0.3) {
+        try {
+          const ctx = getAudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = frequency;
+          gain.gain.setValueAtTime(volume, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(
+            0.01,
+            ctx.currentTime + duration / 1000,
+          );
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + duration / 1000);
+        } catch (e) {}
+      }
+      function beepSuccess() {
+        beep(600, 80, 0.2);
+        setTimeout(() => beep(800, 100, 0.2), 100);
+      }
+      function beepError() {
+        beep(300, 150, 0.2);
+        setTimeout(() => beep(200, 150, 0.2), 160);
+      }
+      function beepBoot() {
+        beep(400, 100, 0.15);
+        setTimeout(() => beep(600, 100, 0.15), 120);
+        setTimeout(() => beep(800, 150, 0.15), 240);
+      }
+      function beepClick() {
+        beep(1200, 40, 0.15);
+      }
+      function beepDelete() {
+        beep(700, 55, 0.12);
+      }
+      function beepEnter() {
+        beep(500, 110, 0.16);
+      }
+      function beepEsc() {
+        beep(350, 90, 0.16);
+      }
 
       let CURRENT_STAGE = "bios";
 
@@ -1039,6 +1238,7 @@
         if (biosState.line >= biosLines.length) {
           biosState.finished = true;
           document.getElementById("biosHint").style.display = "block";
+          beepBoot();
           return;
         }
         const line = biosLines[biosState.line];
@@ -1373,14 +1573,17 @@
 
       function showCmosRomance() {
         const item = cmosCurrentItem();
-        const pair = item.sub[cmosSubIndex(item)];
+        const idx = cmosSubIndex(item);
+        const pair = item.sub[idx];
         document.getElementById("cmosDetailMenu").textContent =
           item.label.toUpperCase();
         document.getElementById("cmosDetailTitle").textContent = pair[0];
         document.getElementById("cmosDetailValue").textContent = pair[1];
         document.getElementById("cmosDetailRomance").textContent =
-          cmosRomance[item.label][cmosSubIndex(item)];
+          cmosRomance[item.label][idx];
         showStage("cmosDetailStage", "cmosDetail");
+        const isNew = markFound("cmos:" + item.label + "|" + idx);
+        if (isNew) beepSuccess();
       }
 
       function closeCmosDetail() {
@@ -1464,13 +1667,22 @@
         );
         if (pinValue.length === 8) checkPin();
       });
+      pinHidden.addEventListener("keydown", (e) => {
+        if (e.key.length === 1 && /[0-9]/.test(e.key)) {
+          beepClick();
+        } else if (e.key === "Backspace" || e.key === "Delete") {
+          beepDelete();
+        }
+      });
 
       function checkPin() {
         if (pinValue === PIN) {
+          beepSuccess();
           pinError.style.color = "var(--ok)";
           pinError.textContent = "ACCESS GRANTED";
           setTimeout(enterTerminal, 600);
         } else {
+          beepError();
           pinError.style.color = "var(--danger)";
           pinError.textContent = "ACCESS DENIED — TRY AGAIN";
           pinBox.classList.add("shake");
@@ -1509,14 +1721,23 @@
         );
         if (lockInput.value.length !== 8) return;
         if (lockInput.value === PIN) {
+          beepSuccess();
           lockError.style.color = "var(--ok)";
           lockError.textContent = "ACCESS RESTORED";
           setTimeout(unlockTerminal, 500);
         } else {
+          beepError();
           lockError.style.color = "var(--danger)";
           lockError.textContent = "ACCESS DENIED";
           lockInput.value = "";
           lockDots.forEach((dot) => dot.classList.remove("filled"));
+        }
+      });
+      lockInput.addEventListener("keydown", (e) => {
+        if (e.key.length === 1 && /[0-9]/.test(e.key)) {
+          beepClick();
+        } else if (e.key === "Backspace" || e.key === "Delete") {
+          beepDelete();
         }
       });
 
@@ -1540,8 +1761,9 @@
       const screen = document.getElementById("screen");
       const cmdInput = document.getElementById("cmdInput");
       const termLiveStatus = document.getElementById("termLiveStatus");
+      const termProgressStatus = document.getElementById("termProgressStatus");
       const PROMPT_TEXT = "/home/hudzaifah(nisa) » ";
-      let inputMode = "command"; // 'command' | 'quiz' | 'sudoPassword'
+      let inputMode = "command"; // 'command' | 'quiz' | 'sudoPassword' | 'confirmDeleteLocal'
       let liveStatusTimer = null;
 
       function updateTermLiveStatus() {
@@ -1557,6 +1779,9 @@
         );
         const seconds = String(totalSeconds % 60).padStart(2, "0");
         termLiveStatus.textContent = `LOVE CORE: ONLINE  |  TOGETHER: ${days}D ${hours}:${minutes}:${seconds}`;
+
+        const { total, foundCount, percent } = getProgressTotals();
+        termProgressStatus.textContent = `EXPLORATION: ${percent}%  (${foundCount}/${total} ditemukan)`;
       }
 
       const termPlasma = document.getElementById("termPlasma");
@@ -1685,15 +1910,15 @@
         annivLine = document.createElement("div");
         annivLine.className = "anniv-card";
         annivLine.innerHTML = `
-          <div class="anniv-card-header">[ ANNIVERSARY COUNTER ]</div>
-          <div class="anniv-card-status" data-anniv-status></div>
-          <div class="anniv-stats">
-            <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-days></span><span class="anniv-stat-label">DAYS</span></div>
-            <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-hours></span><span class="anniv-stat-label">HOURS</span></div>
-            <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-minutes></span><span class="anniv-stat-label">MINUTES</span></div>
-            <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-seconds></span><span class="anniv-stat-label">SECONDS</span></div>
-          </div>
-        `;
+            <div class="anniv-card-header">[ ANNIVERSARY COUNTER ]</div>
+            <div class="anniv-card-status" data-anniv-status></div>
+            <div class="anniv-stats">
+              <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-days></span><span class="anniv-stat-label">DAYS</span></div>
+              <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-hours></span><span class="anniv-stat-label">HOURS</span></div>
+              <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-minutes></span><span class="anniv-stat-label">MINUTES</span></div>
+              <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-seconds></span><span class="anniv-stat-label">SECONDS</span></div>
+            </div>
+          `;
         screen.appendChild(annivLine);
         updateAnnivClock();
         annivTimer = setInterval(updateAnnivClock, 1000);
@@ -1715,18 +1940,18 @@
           if (index >= tasks.length) {
             printLine("");
             printHTML(`
-      <div class="whoami-card">
-        <div class="whoami-card-header">[ IDENTITY PROFILE ]</div>
-        <div class="whoami-row"><span class="whoami-label">USER</span><span class="whoami-value">${PARTNER_NAME}</span></div>
-        <div class="whoami-row"><span class="whoami-label">FULL NAME</span><span class="whoami-value">${PARTNER_FULL_NAME}</span></div>
-        <div class="whoami-row"><span class="whoami-label">ROLE</span><span class="whoami-value">The One</span></div>
-        <div class="whoami-row"><span class="whoami-label">ACCESS LEVEL</span><span class="whoami-value">seluruh hatiku</span></div>
-        <div class="whoami-row"><span class="whoami-label">STATUS</span><span class="whoami-status">paling disayang, paling dicari kalau lagi jauh</span></div>
-        <div class="whoami-row"><span class="whoami-label">SPECIALTY</span><span class="whoami-value">membuat Hudzaifah senyum tanpa alasan</span></div>
-        <div class="whoami-row"><span class="whoami-label">THREAT LEVEL</span><span class="whoami-status">terlalu menggemaskan</span></div>
-        <div class="whoami-row"><span class="whoami-label">SYSTEM NOTE</span><span class="whoami-note">access permanent, cannot be revoked</span></div>
-      </div>
-    `);
+        <div class="whoami-card">
+          <div class="whoami-card-header">[ IDENTITY PROFILE ]</div>
+          <div class="whoami-row"><span class="whoami-label">USER</span><span class="whoami-value">${PARTNER_NAME}</span></div>
+          <div class="whoami-row"><span class="whoami-label">FULL NAME</span><span class="whoami-value">${PARTNER_FULL_NAME}</span></div>
+          <div class="whoami-row"><span class="whoami-label">ROLE</span><span class="whoami-value">The One</span></div>
+          <div class="whoami-row"><span class="whoami-label">ACCESS LEVEL</span><span class="whoami-value">seluruh hatiku</span></div>
+          <div class="whoami-row"><span class="whoami-label">STATUS</span><span class="whoami-status">paling disayang, paling dicari kalau lagi jauh</span></div>
+          <div class="whoami-row"><span class="whoami-label">SPECIALTY</span><span class="whoami-value">membuat Hudzaifah senyum tanpa alasan</span></div>
+          <div class="whoami-row"><span class="whoami-label">THREAT LEVEL</span><span class="whoami-status">terlalu menggemaskan</span></div>
+          <div class="whoami-row"><span class="whoami-label">SYSTEM NOTE</span><span class="whoami-note">access permanent, cannot be revoked</span></div>
+        </div>
+      `);
             printLine("");
             return;
           }
@@ -1742,28 +1967,28 @@
 
       const letterPages = [
         `
-          <div class="section-title">THE FIRST OF ALL THINGS</div>
-          <div class="letter">
-            <p>Dear Nisa,</p>
-            <p>Aku nggak pernah pintar merangkai kata, tapi malam ini aku coba, karena kamu pantas dapat lebih dari sekadar ucapan singkat.</p>
-            <p>Empat bulan bukan waktu yang panjang kalau dibandingkan dengan rencana-rencana yang aku susun diam-diam soal kita ke depannya.</p>
-          </div>
-        `,
+            <div class="section-title">THE FIRST OF ALL THINGS</div>
+            <div class="letter">
+              <p>Dear Nisa,</p>
+              <p>Aku nggak pernah pintar merangkai kata, tapi malam ini aku coba, karena kamu pantas dapat lebih dari sekadar ucapan singkat.</p>
+              <p>Empat bulan bukan waktu yang panjang kalau dibandingkan dengan rencana-rencana yang aku susun diam-diam soal kita ke depannya.</p>
+            </div>
+          `,
         `
-          <div class="section-title">THE MEMORY</div>
-          <div class="letter">
-            <p>Buatku, empat bulan ini cukup untuk aku sadar satu hal: aku suka caramu [isi kenangan spesifik di sini].</p>
-            <p>Aku masih ingat [ceritakan momen pertama kalian bertemu atau jadian di sini]. Sejak itu, hari-hariku jadi punya alasan buat ditunggu.</p>
-          </div>
-        `,
+            <div class="section-title">THE MEMORY</div>
+            <div class="letter">
+              <p>Buatku, empat bulan ini cukup untuk aku sadar satu hal: aku suka caramu [isi kenangan spesifik di sini].</p>
+              <p>Aku masih ingat [ceritakan momen pertama kalian bertemu atau jadian di sini]. Sejak itu, hari-hariku jadi punya alasan buat ditunggu.</p>
+            </div>
+          `,
         `
-          <div class="section-title">THE PROMISE</div>
-          <div class="letter">
-            <p>Terima kasih sudah sabar sama aku, sudah mau dengerin cerita-cerita nggak penting, dan sudah tetap ada meskipun kadang aku nggak sempurna.</p>
-            <p>Selamat empat bulan, Nisa. Ini baru permulaan.</p>
-            <p style="text-align:right;">— Hudzaifah</p>
-          </div>
-        `,
+            <div class="section-title">THE PROMISE</div>
+            <div class="letter">
+              <p>Terima kasih sudah sabar sama aku, sudah mau dengerin cerita-cerita nggak penting, dan sudah tetap ada meskipun kadang aku nggak sempurna.</p>
+              <p>Selamat empat bulan, Nisa. Ini baru permulaan.</p>
+              <p style="text-align:right;">— Hudzaifah</p>
+            </div>
+          `,
       ];
       let letterPager = null;
       let letterPageIndex = 0;
@@ -1771,13 +1996,13 @@
       function renderLetterPage() {
         if (!letterPager) return;
         letterPager.innerHTML = `
-          <div class="letter-pager-header">[ NISA LETTER DOCUMENTATION ]</div>
-          <div class="letter-page">${letterPages[letterPageIndex]}</div>
-          <div class="letter-pager-footer">
-            <strong>PAGE ${letterPageIndex + 1}/${letterPages.length}</strong>
-            &nbsp;&nbsp; LEFT: previous &nbsp;&nbsp; RIGHT: next &nbsp;&nbsp; ESC: exit
-          </div>
-        `;
+            <div class="letter-pager-header">[ NISA LETTER DOCUMENTATION ]</div>
+            <div class="letter-page">${letterPages[letterPageIndex]}</div>
+            <div class="letter-pager-footer">
+              <strong>PAGE ${letterPageIndex + 1}/${letterPages.length}</strong>
+              &nbsp;&nbsp; LEFT: previous &nbsp;&nbsp; RIGHT: next &nbsp;&nbsp; ESC: exit
+            </div>
+          `;
         screen.scrollTop = screen.scrollHeight;
       }
 
@@ -1815,6 +2040,7 @@
           printLine("  matrix     - ???");
           printLine("  decrypt    - buka pesan rahasia yang terenkripsi");
           printLine("  ping       - cek koneksi ke hati Nisa");
+          printLine("  progress   - lihat rahasia apa saja yang sudah ditemukan");
           printLine("  clear      - bersihkan layar");
           printLine("");
         },
@@ -1830,12 +2056,12 @@
             '<div class="section-title">FOTO KITA</div><div class="photo-grid">';
           for (let i = 1; i <= PHOTO_COUNT; i++) {
             html += `
-        <div class="photo-thumb" data-index="${i}">
-          <img src="assets/foto-${i}.jpg" alt="foto ${i}" loading="lazy"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div class="photo-fallback">foto-${i}.jpg<br>belum ada</div>
-          <span class="idx">${i}</span>
-        </div>`;
+          <div class="photo-thumb" data-index="${i}">
+            <img src="assets/foto-${i}.jpg" alt="foto ${i}" loading="lazy"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="photo-fallback">foto-${i}.jpg<br>belum ada</div>
+            <span class="idx">${i}</span>
+          </div>`;
           }
           html += "</div>";
           printHTML(html);
@@ -1847,14 +2073,16 @@
         },
         video: () => {
           printHTML(`
-      <div class="section-title">VIDEO PENJELASAN MAKE TIME</div>
-      <div class="video-wrap">
-        <video controls>
-          <source src="assets/video-1.mp4" type="video/mp4">
-          Browser kamu tidak mendukung pemutaran video.
-        </video>
-      </div>
-    `);
+        <div class="section-title">VIDEO PENJELASAN MAKE TIME</div>
+        <div class="video-wrap">
+          <video controls>
+            <source src="assets/video-1.mp4" type="video/mp4">
+            Browser kamu tidak mendukung pemutaran video.
+          </video>
+        </div>
+      `);
+          const isNew = markFound("video:1");
+          if (isNew) beepSuccess();
         },
         clear: () => {
           clearInterval(annivTimer);
@@ -1869,6 +2097,56 @@
         decrypt: () => runDecrypt(),
         ping: () => runPing(),
         sudo: () => startSudo(),
+        "delete-local": () => startDeleteLocal(),
+        progress: () => {
+          const cmosAll = cmosLeft.concat(cmosRight);
+          const cmosFound = cmosAll.reduce((sum, item) => {
+            let c = 0;
+            item.sub.forEach((_, idx) => {
+              if (isFound("cmos:" + item.label + "|" + idx)) c++;
+            });
+            return sum + c;
+          }, 0);
+          const cmosTotal = getCmosTotal();
+          const photosFound = Array.from(
+            { length: PHOTO_COUNT },
+            (_, i) => i + 1,
+          ).filter((i) => isFound("photo:" + i)).length;
+          const videoFound = isFound("video:1") ? 1 : 0;
+          const secretsCount = KNOWN_SECRETS.filter((k) =>
+            isFound("secret:" + k),
+          ).length;
+          const ordinaryCount = ORDINARY_COMMANDS.filter((c) =>
+            isFound("command:" + c),
+          ).length;
+
+          printLine("EXPLORATION TRACKER:", "gold");
+          printLine(
+            `  BIOS/CMOS details    : ${cmosFound}/${cmosTotal}`,
+          );
+          printLine(`  Foto                 : ${photosFound}/${PHOTO_COUNT}`);
+          printLine(`  Video                : ${videoFound}/1`);
+          printLine(`  Secret commands      : ${secretsCount}/${KNOWN_SECRETS.length}`);
+          printLine(`  Command lain         : ${ordinaryCount}/${ORDINARY_COMMANDS.length}`);
+          printLine("");
+          KNOWN_SECRETS.forEach((k) => {
+            const found = isFound("secret:" + k);
+            printLine("  " + (found ? "[x] " + k : "[ ] ???"));
+          });
+          printLine("");
+          const { total, foundCount, percent } = getProgressTotals();
+          printLine(
+            `TOTAL: ${foundCount}/${total} (${percent}%)`,
+            percent === 100 ? "ok" : "dim",
+          );
+          if (isFound("secret:konami")) {
+            printLine(
+              "+ 1 rahasia bonus tersembunyi juga sudah kamu temukan. \u2665",
+              "pink",
+            );
+          }
+          printLine("");
+        },
       };
 
       /* ============ QUIZ ============ */
@@ -1973,13 +2251,13 @@
           )
           .join("");
         printHTML(`
-      <div class="quiz-card">
-        <div class="quiz-card-header">[ QUESTION ${quizState.index + 1}/${quizState.questions.length} ]</div>
-        <div class="quiz-question">${q.q}</div>
-        <div class="quiz-options">${options}</div>
-        <div class="quiz-instruction">${instruction}</div>
-      </div>
-    `);
+        <div class="quiz-card">
+          <div class="quiz-card-header">[ QUESTION ${quizState.index + 1}/${quizState.questions.length} ]</div>
+          <div class="quiz-question">${q.q}</div>
+          <div class="quiz-options">${options}</div>
+          <div class="quiz-instruction">${instruction}</div>
+        </div>
+      `);
       }
 
       function handleQuizAnswer(raw) {
@@ -2034,6 +2312,7 @@
         );
         printLine("");
         if (quizState.correctCount === quizState.questions.length) {
+          beepSuccess();
           runQuizResultProgress(showQuizReward);
         } else {
           printLine(
@@ -2073,17 +2352,17 @@
 
       function showQuizReward() {
         printHTML(`
-      <div class="quiz-reward">
-      <div class="section-title">YOU PASSED THE QUIZ</div>
-      <div class="letter">
-        <p>okay wait, you actually got everything right?? i'm a little scared now, are you secretly reading my diary or something lol.</p>
-        <p>anyway since you clearly know everything about me (and clearly pay way too much attention, which... i kinda love), here's your prize: my honest, unfiltered feelings, no cap.</p>
-        <p>these 4 months with you have genuinely been one of the best decisions i never had to think twice about. you're somehow the easiest person to love and still keep me on my toes at the same time, i did not think that combo was possible until you.</p>
-        <p>so yeah. quiz champion, memory keeper, my favorite person, all in one. happy 4 months, sayang. i'm not going anywhere.</p>
-        <p style="text-align:right;">— hudz</p>
-      </div>
-      </div>
-    `);
+        <div class="quiz-reward">
+        <div class="section-title">YOU PASSED THE QUIZ</div>
+        <div class="letter">
+          <p>okay wait, you actually got everything right?? i'm a little scared now, are you secretly reading my diary or something lol.</p>
+          <p>anyway since you clearly know everything about me (and clearly pay way too much attention, which... i kinda love), here's your prize: my honest, unfiltered feelings, no cap.</p>
+          <p>these 4 months with you have genuinely been one of the best decisions i never had to think twice about. you're somehow the easiest person to love and still keep me on my toes at the same time, i did not think that combo was possible until you.</p>
+          <p>so yeah. quiz champion, memory keeper, my favorite person, all in one. happy 4 months, sayang. i'm not going anywhere.</p>
+          <p style="text-align:right;">— hudz</p>
+        </div>
+        </div>
+      `);
       }
 
       /* ============ HACK ============ */
@@ -2143,6 +2422,7 @@
             printLine("");
             printLine("ACCESS: 100% — ALREADY YOURS.", "gold");
             printLine("");
+            announceIfNewSecret("hack");
             return;
           }
           runProgressTask(tasks[i].label, tasks[i].attempts, () => {
@@ -2219,6 +2499,7 @@
               "gold",
             );
             printLine("");
+            announceIfNewSecret("scan");
             return;
           }
           runScanTask(tasks[i], () => {
@@ -2259,6 +2540,7 @@
               "gold",
             );
             printLine("");
+            announceIfNewSecret("ping");
             return;
           }
           const time = Math.floor(Math.random() * 4);
@@ -2352,6 +2634,7 @@
           printLine("Wake up, Nisa...", "ok");
           printLine("The system has one truth: it's always been you.", "gold");
           printLine("");
+          announceIfNewSecret("matrix");
         })();
       }
 
@@ -2429,6 +2712,7 @@
               printLine("");
               printLine("Checksum verified. Decryption complete.", "ok");
               printLine("");
+              announceIfNewSecret("decrypt");
             }
           }
           tick();
@@ -2457,6 +2741,40 @@
         }
       }
 
+      /* ============ DELETE-LOCAL (reset progress) ============ */
+      function startDeleteLocal() {
+        inputMode = "confirmDeleteLocal";
+        printLine(
+          "PERINGATAN: ini akan menghapus SEMUA progress eksplorasi kamu",
+          "danger",
+        );
+        printLine(
+          "(BIOS/CMOS, foto, video, command, secret) dari penyimpanan lokal.",
+          "danger",
+        );
+        printLine("Ketik 'yakin' untuk konfirmasi, atau apapun yang lain untuk batal.", "dim");
+      }
+
+      function handleDeleteLocalConfirm(raw) {
+        inputMode = "command";
+        const answer = raw.trim().toLowerCase();
+        if (answer === "yakin" || answer === "ya" || answer === "yes") {
+          foundItems = [];
+          saveProgress(foundItems);
+          beepError();
+          printLine("");
+          printLine("Semua progress lokal berhasil dihapus.", "danger");
+          printLine(
+            "Uptime cinta tetap jalan terus, cuma pencatatan eksplorasinya yang direset. :)",
+            "dim",
+          );
+          printLine("");
+        } else {
+          printLine("Dibatalkan. Progress kamu aman.", "dim");
+          printLine("");
+        }
+      }
+
       function runSudoSuccess() {
         const lines = [
           "Authenticating...",
@@ -2476,30 +2794,31 @@
         }
         function showTrophy() {
           printHTML(`
-      <pre style="color:var(--gold); font-family:'Share Tech Mono',monospace; font-size:18px; line-height:1.25; margin:10px 0;">
-        ___________
-       '._==_==_=_.'
-       .-\\:      /-.
-      | (|:.     |) |
-       '-|:.     |-'
-         \\::.    /
-          '::. .'
-            ) (
-          _.' '._
-         '-------'
-      </pre>`);
+        <pre style="color:var(--gold); font-family:'Share Tech Mono',monospace; font-size:18px; line-height:1.25; margin:10px 0;">
+          ___________
+         '._==_==_=_.'
+         .-\\:      /-.
+        | (|:.     |) |
+         '-|:.     |-'
+           \\::.    /
+            '::. .'
+              ) (
+            _.' '._
+           '-------'
+        </pre>`);
           printLine("ACHIEVEMENT UNLOCKED", "gold");
           printLine('"First To Find The Secret"', "pink");
           printLine("");
           printLine("kamu orang pertama yang nemuin ini. hadiahnya:", "dim");
           printHTML(`
-      <div style="position:relative; max-width:420px; margin:10px 0 16px; border:2px dashed var(--gold); border-radius:6px; padding:18px 20px; background:rgba(255,210,122,0.05); overflow:hidden;">
-        <div style="font-size:15px; color:var(--dim); letter-spacing:2px; margin-bottom:8px;">HUDZAIFAH &amp; NISA INDUSTRIES &mdash; REWARD TICKET</div>
-        <div style="font-family:'VT323',monospace; font-size:32px; color:var(--gold); line-height:1.15;">PELUKAN GRATIS<br>SEUMUR HIDUP</div>
-        <div style="font-size:15px; color:var(--dim); margin-top:10px;">Ticket #001 &middot; Non-transferable &middot; Redeemable anytime, anywhere</div>
-        <div style="position:absolute; top:12px; right:-8px; transform:rotate(18deg); border:3px solid var(--danger); color:var(--danger); font-family:'VT323',monospace; font-size:26px; padding:2px 12px; letter-spacing:3px; opacity:0.85;">CLAIMED</div>
-      </div>
-    `);
+        <div style="position:relative; max-width:420px; margin:10px 0 16px; border:2px dashed var(--gold); border-radius:6px; padding:18px 20px; background:rgba(255,210,122,0.05); overflow:hidden;">
+          <div style="font-size:15px; color:var(--dim); letter-spacing:2px; margin-bottom:8px;">HUDZAIFAH &amp; NISA INDUSTRIES &mdash; REWARD TICKET</div>
+          <div style="font-family:'VT323',monospace; font-size:32px; color:var(--gold); line-height:1.15;">PELUKAN GRATIS<br>SEUMUR HIDUP</div>
+          <div style="font-size:15px; color:var(--dim); margin-top:10px;">Ticket #001 &middot; Non-transferable &middot; Redeemable anytime, anywhere</div>
+          <div style="position:absolute; top:12px; right:-8px; transform:rotate(18deg); border:3px solid var(--danger); color:var(--danger); font-family:'VT323',monospace; font-size:26px; padding:2px 12px; letter-spacing:3px; opacity:0.85;">CLAIMED</div>
+        </div>
+      `);
+          announceIfNewSecret("sudo");
         }
         next();
       }
@@ -2586,6 +2905,8 @@
         document.getElementById("modalDate").textContent = data.date;
         document.getElementById("modalDesc").textContent = data.desc;
         document.getElementById("modal").classList.add("active");
+        const isNew = markFound("photo:" + index);
+        if (isNew) beepSuccess();
       }
       document
         .getElementById("modalClose")
@@ -2633,6 +2954,7 @@
           return;
         }
         if (e.key === "Enter") {
+          beepEnter();
           const raw = cmdInput.value.trim();
           if (inputMode !== "sudoPassword") {
             printLine(PROMPT_TEXT + raw, "dim");
@@ -2647,10 +2969,17 @@
             handleSudoPassword(raw);
             return;
           }
+          if (inputMode === "confirmDeleteLocal") {
+            handleDeleteLocalConfirm(raw);
+            return;
+          }
 
           if (raw === "") return;
           const fn = commands[raw.toLowerCase()];
           if (fn) {
+            if (ORDINARY_COMMANDS.includes(raw.toLowerCase())) {
+              markFound("command:" + raw.toLowerCase());
+            }
             fn();
           } else {
             printLine(
@@ -2659,6 +2988,21 @@
             );
             printLine("");
           }
+        } else if (
+          inputMode === "command" &&
+          !e.ctrlKey &&
+          !e.altKey &&
+          (e.key === "Backspace" || e.key === "Delete") &&
+          cmdInput.value.length > 0
+        ) {
+          beepDelete();
+        } else if (
+          inputMode === "command" &&
+          !e.ctrlKey &&
+          !e.altKey &&
+          e.key.length === 1
+        ) {
+          beepClick();
         }
       });
 
@@ -2667,6 +3011,7 @@
         if (CURRENT_STAGE === "bios") {
           if (e.key === "Delete") {
             e.preventDefault();
+            beepClick();
             enterCmos();
           } else if (biosState.finished) {
             e.preventDefault();
@@ -2678,6 +3023,7 @@
         if (CURRENT_STAGE === "loading") {
           if (e.key === "Delete") {
             e.preventDefault();
+            beepClick();
             enterCmos();
           }
           return;
@@ -2686,21 +3032,27 @@
         if (CURRENT_STAGE === "cmos") {
           if (e.key === "Escape") {
             e.preventDefault();
+            beepEsc();
             resetBios();
           } else if (e.key === "ArrowDown") {
             e.preventDefault();
+            beepClick();
             cmosMove("down");
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
+            beepClick();
             cmosMove("up");
           } else if (e.key === "ArrowLeft") {
             e.preventDefault();
+            beepClick();
             cmosMove("left");
           } else if (e.key === "ArrowRight") {
             e.preventDefault();
+            beepClick();
             cmosMove("right");
           } else if (e.key === "Enter") {
             e.preventDefault();
+            beepEnter();
             openCmosSub();
           }
           return;
@@ -2709,21 +3061,27 @@
         if (CURRENT_STAGE === "cmosSub") {
           if (e.key === "Escape") {
             e.preventDefault();
+            beepEsc();
             closeCmosSub();
           } else if (e.key === "ArrowDown") {
             e.preventDefault();
+            beepClick();
             cmosSubMove("down");
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
+            beepClick();
             cmosSubMove("up");
           } else if (e.key === "ArrowLeft") {
             e.preventDefault();
+            beepClick();
             cmosSubMove("left");
           } else if (e.key === "ArrowRight") {
             e.preventDefault();
+            beepClick();
             cmosSubMove("right");
           } else if (e.key === "Enter") {
             e.preventDefault();
+            beepEnter();
             showCmosRomance();
           }
           return;
@@ -2732,14 +3090,33 @@
         if (CURRENT_STAGE === "cmosDetail") {
           if (e.key === "Escape") {
             e.preventDefault();
+            beepEsc();
             closeCmosDetail();
           }
           return;
         }
 
         if (CURRENT_STAGE === "terminal") {
+          if (e.key === "F12") {
+            e.preventDefault();
+            beepEsc();
+            resetBios();
+            return;
+          }
+
+          const konamiKey = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+          konamiBuffer.push(konamiKey);
+          if (konamiBuffer.length > KONAMI_SEQUENCE.length) konamiBuffer.shift();
           if (
-            e.key.toLowerCase() === "l" &&
+            konamiBuffer.length === KONAMI_SEQUENCE.length &&
+            konamiBuffer.every((k, idx) => k === KONAMI_SEQUENCE[idx])
+          ) {
+            konamiBuffer = [];
+            triggerKonami();
+          }
+
+          if (
+            e.key.toLowerCase() === ";" &&
             !e.ctrlKey &&
             !e.altKey &&
             !e.metaKey &&
