@@ -1,787 +1,1926 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NISSA-OS</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NISA-OS</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap");
 
-  :root{
-    --bg: #0a0612;
-    --text: #efe6fb;
-    --pink: #ff7ab8;
-    --gold: #ffd27a;
-    --violet: #b48cff;
-    --dim: #6e5a7d;
-    --ok: #7cffb2;
-    --danger: #ff6b6b;
-    --bios-text: #d9d9d9;
-  }
+      :root {
+        --bg: #0a0612;
+        --text: #efe6fb;
+        --pink: #ff7ab8;
+        --gold: #ffd27a;
+        --violet: #b48cff;
+        --dim: #6e5a7d;
+        --ok: #7cffb2;
+        --danger: #ff6b6b;
+        --bios-text: #d9d9d9;
+      }
 
-  *{ box-sizing:border-box; }
-  html,body{
-    margin:0; padding:0; height:100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family:'Share Tech Mono','Courier New',monospace;
-    overflow:hidden;
-  }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Share Tech Mono", "Courier New", monospace;
+        overflow: hidden;
+      }
 
-  #crtOverlay{ position:fixed; inset:0; z-index:50; pointer-events:none; }
-  #crtOverlay::before{
-    content:""; position:absolute; inset:0;
-    background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 1px, rgba(0,0,0,0.16) 2px, rgba(0,0,0,0.16) 3px);
-  }
-  #crtOverlay::after{
-    content:""; position:absolute; inset:0;
-    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.6) 100%);
-  }
+      #crtOverlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        pointer-events: none;
+      }
+      #crtOverlay::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0) 0px,
+          rgba(0, 0, 0, 0) 1px,
+          rgba(0, 0, 0, 0.16) 2px,
+          rgba(0, 0, 0, 0.16) 3px
+        );
+      }
+      #crtOverlay::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 0, 0) 55%,
+          rgba(0, 0, 0, 0.6) 100%
+        );
+      }
 
-  /* IMPORTANT: base .stage rule controls visibility. No stage-specific
+      /* IMPORTANT: base .stage rule controls visibility. No stage-specific
      ID selector may set `display` outside of a `.active` qualifier,
      or it will always render regardless of the active stage. */
-  .stage{ position:fixed; inset:0; display:none; }
-  .stage.active{ display:block; }
+      .stage {
+        position: fixed;
+        inset: 0;
+        display: none;
+      }
+      .stage.active {
+        display: block;
+      }
 
-  /* ===== BIOS STAGE ===== */
-  #biosStage{ padding:30px 40px; color:var(--bios-text); font-size:15px; line-height:1.55; white-space:pre-wrap; }
-  .bios-hint{ position:absolute; bottom:26px; left:40px; font-size:13px; color:#9c9c9c; }
-  .bios-hint u{ color:#e8d97a; }
+      /* ===== BIOS STAGE ===== */
+      #biosStage {
+        padding: 30px 40px;
+        color: var(--bios-text);
+        font-size: 19px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+      .bios-hint {
+        position: absolute;
+        bottom: 26px;
+        left: 40px;
+        font-size: 17px;
+        color: #9c9c9c;
+      }
+      .bios-hint u {
+        color: #e8d97a;
+      }
 
-  /* ===== CMOS SETUP (main grid) ===== */
-  #cmosStage.active{ display:flex; }
-  #cmosStage{ background:#0000a8; color:#e8e8e8; font-size:15px; align-items:center; justify-content:center; }
-  .cmos-frame{ width:min(920px,92vw); border:3px double #e8e8e8; padding:18px 26px; }
-  .cmos-title{ text-align:center; margin-bottom:14px; }
-  .cmos-grid{ display:grid; grid-template-columns:1fr 1fr; border:1px solid #e8e8e8; padding:20px 28px; gap:8px 40px; min-height:260px; }
-  .cmos-col{ display:flex; flex-direction:column; gap:8px; }
-  .cmos-item{ padding:3px 10px; }
-  .cmos-item.selected{ background:#c40000; color:#fff; }
-  .cmos-status{ margin-top:14px; color:#ffd27a; font-size:13px; min-height:18px; text-align:center; }
-  .cmos-footer{ margin-top:10px; text-align:center; font-size:13px; color:#ffe27a; }
+      /* ===== CMOS SETUP (main grid) ===== */
+      #cmosStage.active {
+        display: flex;
+      }
+      #cmosStage {
+        background: #0000a8;
+        color: #e8e8e8;
+        font-size: 19px;
+        align-items: center;
+        justify-content: center;
+      }
+      .cmos-frame {
+        width: min(920px, 92vw);
+        border: 3px double #e8e8e8;
+        padding: 18px 26px;
+      }
+      .cmos-title {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+      .cmos-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid #e8e8e8;
+        padding: 20px 28px;
+        gap: 8px 40px;
+        min-height: 260px;
+      }
+      .cmos-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .cmos-item {
+        padding: 3px 10px;
+      }
+      .cmos-item.selected {
+        background: #c40000;
+        color: #fff;
+      }
+      .cmos-status {
+        margin-top: 14px;
+        color: #ffd27a;
+        font-size: 17px;
+        min-height: 18px;
+        text-align: center;
+      }
+      .cmos-footer {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 17px;
+        color: #ffe27a;
+      }
 
-  /* ===== CMOS SUBMENU (opened via Enter) ===== */
-  #cmosSubStage.active{ display:flex; }
-  #cmosSubStage{ background:#0000a8; color:#e8e8e8; font-size:15px; align-items:center; justify-content:center; }
-  .cmos-sub-frame{ width:min(920px,92vw); border:3px double #e8e8e8; padding:18px 26px; }
-  .cmos-sub-grid{ display:grid; grid-template-columns:1fr 1fr; border:1px solid #e8e8e8; padding:20px 28px; gap:10px 40px; min-height:200px; }
-  .cmos-sub-row{ display:flex; justify-content:space-between; gap:14px; padding:3px 6px; }
-  .cmos-sub-row.first{ background:#c40000; color:#fff; }
-  .cmos-sub-row .val{ color:#ffe27a; }
-  .cmos-sub-row.first .val{ color:#fff; }
-  .cmos-sub-footer-note{ margin-top:14px; text-align:center; color:#ffe27a; font-size:13px; }
-  .cmos-sub-controls{ margin-top:10px; text-align:center; font-size:13px; color:#e8e8e8; }
+      /* ===== CMOS SUBMENU (opened via Enter) ===== */
+      #cmosSubStage.active {
+        display: flex;
+      }
+      #cmosSubStage {
+        background: #0000a8;
+        color: #e8e8e8;
+        font-size: 19px;
+        align-items: center;
+        justify-content: center;
+      }
+      .cmos-sub-frame {
+        width: min(920px, 92vw);
+        border: 3px double #e8e8e8;
+        padding: 18px 26px;
+      }
+      .cmos-sub-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid #e8e8e8;
+        padding: 20px 28px;
+        gap: 10px 40px;
+        min-height: 200px;
+      }
+      .cmos-sub-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 3px 6px;
+      }
+      .cmos-sub-row.first {
+        background: #c40000;
+        color: #fff;
+      }
+      .cmos-sub-row .val {
+        color: #ffe27a;
+      }
+      .cmos-sub-row.first .val {
+        color: #fff;
+      }
+      .cmos-sub-footer-note {
+        margin-top: 14px;
+        text-align: center;
+        color: #ffe27a;
+        font-size: 17px;
+      }
+      #cmosDetailStage.active {
+        display: flex;
+      }
+      #cmosDetailStage {
+        background: #0000a8;
+        color: #e8e8e8;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px;
+      }
+      .cmos-detail-frame {
+        width: min(820px, 92vw);
+        border: 3px double #e8e8e8;
+        padding: 28px 34px;
+      }
+      .cmos-detail-title {
+        color: #ffe27a;
+        font-size: 24px;
+        margin-bottom: 22px;
+      }
+      .cmos-detail-value {
+        color: #fff;
+        font-size: 21px;
+        margin-bottom: 24px;
+      }
+      .cmos-detail-romance {
+        color: #ffd6f0;
+        font-size: 20px;
+        line-height: 1.5;
+        max-width: 700px;
+        margin: 0 auto 24px;
+      }
+      .cmos-detail-controls {
+        color: #ffe27a;
+        font-size: 17px;
+      }
+      .cmos-sub-controls {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 17px;
+        color: #e8e8e8;
+      }
 
-  /* ===== LOADING STAGE ===== */
-  #loadStage{ padding:34px 42px; font-size:15px; line-height:1.7; }
-  .load-title{ color:var(--gold); margin-bottom:16px; }
-  .load-line{ display:flex; justify-content:space-between; max-width:640px; }
-  .load-line .ok{ color:var(--ok); }
+      /* ===== LOADING STAGE ===== */
+      #loadStage {
+        padding: 34px 42px;
+        font-size: 19px;
+        line-height: 1.7;
+      }
+      .load-title {
+        color: var(--gold);
+        margin-bottom: 16px;
+      }
+      .load-line {
+        display: flex;
+        justify-content: space-between;
+        max-width: 640px;
+      }
+      .load-line .ok {
+        color: var(--ok);
+      }
 
-  /* ===== PIN STAGE ===== */
-  #pinStage.active{ display:flex; }
-  #pinStage{ align-items:center; justify-content:center; }
-  .pin-box{ text-align:center; }
-  .pin-title{ font-family:'VT323',monospace; font-size:44px; color:var(--gold); letter-spacing:4px; text-shadow:0 0 10px rgba(255,210,122,.6); margin-bottom:6px; }
-  .pin-sub{ color:var(--pink); font-size:14px; letter-spacing:3px; margin-bottom:28px; }
-  .pin-dots{ display:flex; gap:14px; justify-content:center; margin-bottom:22px; }
-  .pin-dot{ width:15px; height:15px; border:2px solid var(--dim); border-radius:50%; transition:.15s; }
-  .pin-dot.filled{ background:var(--violet); border-color:var(--violet); box-shadow:0 0 10px var(--violet); }
-  .pin-error{ font-size:14px; height:18px; letter-spacing:2px; color:var(--danger); }
-  #pinHidden{ position:absolute; opacity:0; pointer-events:none; height:0; width:0; }
-  @keyframes shake{ 0%,100%{transform:translateX(0);} 20%{transform:translateX(-10px);} 40%{transform:translateX(10px);} 60%{transform:translateX(-6px);} 80%{transform:translateX(6px);} }
-  .shake{ animation:shake .35s ease; }
+      /* ===== PIN STAGE ===== */
+      #pinStage.active {
+        display: flex;
+      }
+      #pinStage {
+        align-items: center;
+        justify-content: center;
+      }
+      .pin-box {
+        text-align: center;
+      }
+      .pin-title {
+        font-family: "VT323", monospace;
+        font-size: 48px;
+        color: var(--gold);
+        letter-spacing: 4px;
+        text-shadow: 0 0 10px rgba(255, 210, 122, 0.6);
+        margin-bottom: 6px;
+      }
+      .pin-sub {
+        color: var(--pink);
+        font-size: 18px;
+        letter-spacing: 3px;
+        margin-bottom: 28px;
+      }
+      .pin-dots {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+        margin-bottom: 22px;
+      }
+      .pin-dot {
+        width: 15px;
+        height: 15px;
+        border: 2px solid var(--dim);
+        border-radius: 50%;
+        transition: 0.15s;
+      }
+      .pin-dot.filled {
+        background: var(--violet);
+        border-color: var(--violet);
+        box-shadow: 0 0 10px var(--violet);
+      }
+      .pin-error {
+        font-size: 18px;
+        height: 18px;
+        letter-spacing: 2px;
+        color: var(--danger);
+      }
+      #pinHidden {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        height: 0;
+        width: 0;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-10px);
+        }
+        40% {
+          transform: translateX(10px);
+        }
+        60% {
+          transform: translateX(-6px);
+        }
+        80% {
+          transform: translateX(6px);
+        }
+      }
+      .shake {
+        animation: shake 0.35s ease;
+      }
 
-  /* ===== TERMINAL STAGE ===== */
-  #termStage.active{ display:flex; flex-direction:column; }
-  #termStage{ padding:24px 34px; }
-  .term-banner{ display:inline-flex; gap:16px; align-items:center; border:1px solid var(--violet); padding:10px 18px; margin-bottom:12px; width:fit-content; }
-  .term-ascii{ color:var(--pink); font-size:12px; line-height:1.05; white-space:pre; }
-  .term-banner-text .l1{ color:var(--gold); font-size:15px; }
-  .term-banner-text .l2{ color:var(--dim); font-size:12px; }
-  .term-meta{ color:var(--dim); font-size:13px; margin-bottom:4px; }
-  .term-hint{ color:var(--dim); font-size:13px; margin-bottom:14px; }
-  .term-hint b{ color:var(--pink); font-weight:normal; }
+      /* ===== TERMINAL STAGE ===== */
+      #termStage.active {
+        display: flex;
+        flex-direction: column;
+      }
+      #termStage {
+        padding: 24px 34px;
+      }
+      .term-banner {
+        display: inline-flex;
+        gap: 16px;
+        align-items: center;
+        border: 1px solid var(--violet);
+        padding: 10px 18px;
+        margin-bottom: 12px;
+        width: fit-content;
+      }
+      .term-ascii {
+        color: var(--pink);
+        font-size: 12px;
+        line-height: 1.05;
+        white-space: pre;
+      }
+      .term-plasma {
+        display: block;
+        width: 300px;
+        height: 110px;
+      }
+      .term-banner-text .l1 {
+        color: var(--gold);
+        font-size: 19px;
+      }
+      .term-banner-text .l2 {
+        color: var(--dim);
+        font-size: 16px;
+      }
+      .term-meta {
+        color: var(--dim);
+        font-size: 17px;
+        margin-bottom: 4px;
+      }
+      .term-hint {
+        color: var(--dim);
+        font-size: 17px;
+        margin-bottom: 14px;
+      }
+      .term-hint b {
+        color: var(--pink);
+        font-weight: normal;
+      }
 
-  #screen{ flex:1; overflow-y:auto; font-size:16px; line-height:1.55; white-space:pre-wrap; word-break:break-word; }
-  #screen::-webkit-scrollbar{ width:8px; }
-  #screen::-webkit-scrollbar-thumb{ background:var(--dim); }
-  .line{ margin:0 0 2px 0; }
-  .pink{ color:var(--pink); } .gold{ color:var(--gold); } .violet{ color:var(--violet); } .dim{ color:var(--dim); } .danger{ color:var(--danger); } .ok{ color:var(--ok); }
+      #screen {
+        flex: 1;
+        overflow-y: auto;
+        font-size: 20px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      #screen::-webkit-scrollbar {
+        width: 8px;
+      }
+      #screen::-webkit-scrollbar-thumb {
+        background: var(--dim);
+      }
+      .line {
+        margin: 0 0 2px 0;
+      }
+      .pink {
+        color: var(--pink);
+      }
+      .gold {
+        color: var(--gold);
+      }
+      .violet {
+        color: var(--violet);
+      }
+      .dim {
+        color: var(--dim);
+      }
+      .danger {
+        color: var(--danger);
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .whoami-card {
+        width: min(680px, 100%);
+        margin: 8px 0 14px;
+        border: 1px solid var(--ok);
+        color: var(--ok);
+        background: rgba(124, 255, 178, 0.035);
+        padding: 14px 18px;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      .whoami-card-header {
+        color: var(--ok);
+        border-bottom: 1px solid rgba(124, 255, 178, 0.45);
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+      }
+      .whoami-row {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 14px;
+      }
+      .whoami-label {
+        color: var(--dim);
+      }
+      .whoami-value {
+        color: var(--text);
+      }
+      .whoami-status {
+        color: var(--ok);
+      }
+      .whoami-note {
+        color: var(--gold);
+      }
+      .anniv-card {
+        width: min(720px, 100%);
+        margin: 8px 0 14px;
+        border: 1px solid var(--gold);
+        background: rgba(255, 210, 122, 0.035);
+        padding: 14px 18px;
+        color: var(--text);
+      }
+      .anniv-card-header {
+        color: var(--gold);
+        border-bottom: 1px solid rgba(255, 210, 122, 0.45);
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+        letter-spacing: 1px;
+      }
+      .anniv-card-status {
+        color: var(--dim);
+        margin-bottom: 12px;
+      }
+      .anniv-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .anniv-stat {
+        border: 1px solid rgba(255, 210, 122, 0.35);
+        padding: 8px 6px;
+        text-align: center;
+      }
+      .anniv-stat-value {
+        display: block;
+        color: var(--gold);
+        font-size: 24px;
+        line-height: 1.1;
+      }
+      .anniv-stat-label {
+        display: block;
+        color: var(--dim);
+        font-size: 15px;
+        margin-top: 4px;
+      }
+      .quiz-card {
+        width: min(760px, 100%);
+        margin: 8px 0 14px;
+        border: 1px solid var(--violet);
+        background: rgba(180, 140, 255, 0.035);
+        padding: 10px 16px;
+        line-height: 1.3;
+        white-space: normal;
+      }
+      .quiz-card-header {
+        color: var(--violet);
+        border-bottom: 1px solid rgba(180, 140, 255, 0.45);
+        padding-bottom: 5px;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+      }
+      .quiz-question {
+        color: var(--text);
+        margin-bottom: 8px;
+      }
+      .quiz-option {
+        color: var(--gold);
+        padding: 2px 0;
+      }
+      .quiz-instruction {
+        color: var(--dim);
+        border-top: 1px solid rgba(180, 140, 255, 0.3);
+        margin-top: 8px;
+        padding-top: 5px;
+      }
+      .quiz-reward {
+        white-space: normal;
+      }
+      .quiz-reward .letter p {
+        margin-bottom: 1em;
+      }
+      .quiz-reward .letter p:last-child {
+        margin-bottom: 0;
+      }
 
-  #inputRow{ display:flex; align-items:center; font-size:16px; padding-top:6px; }
-  #prompt{ margin-right:8px; white-space:nowrap; }
-  #prompt .p1{ color:var(--violet); } #prompt .p2{ color:var(--gold); } #prompt .p3{ color:var(--pink); }
-  #cmdInput{ flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:inherit; font-size:16px; caret-color:var(--pink); }
+      #inputRow {
+        display: flex;
+        align-items: center;
+        font-size: 20px;
+        padding-top: 6px;
+      }
+      #prompt {
+        margin-right: 8px;
+        white-space: nowrap;
+      }
+      #prompt .p1 {
+        color: var(--violet);
+      }
+      #prompt .p2 {
+        color: var(--gold);
+      }
+      #prompt .p3 {
+        color: var(--pink);
+      }
+      #cmdInput {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 20px;
+        caret-color: var(--pink);
+      }
 
-  .section-title{ font-family:'VT323',monospace; font-size:26px; color:var(--gold); margin:4px 0 10px 0; border-bottom:1px solid var(--dim); padding-bottom:6px; }
-  .letter{ max-width:640px; font-size:17px; }
-  .letter p{ margin:0 0 14px 0; }
+      .section-title {
+        font-family: "VT323", monospace;
+        font-size: 30px;
+        color: var(--gold);
+        margin: 4px 0 10px 0;
+        border-bottom: 1px solid var(--dim);
+        padding-bottom: 6px;
+      }
+      .letter {
+        max-width: 640px;
+        font-size: 21px;
+      }
+      .letter p {
+        margin: 0 0 14px 0;
+      }
+      .letter-pager {
+        max-width: 820px;
+        border: 1px solid var(--ok);
+        background: rgba(124, 255, 178, 0.025);
+        padding: 6px 12px;
+        margin: 4px 0 8px;
+        line-height: 1.3;
+        white-space: normal;
+      }
+      .letter-pager-header {
+        color: var(--ok);
+        border-bottom: 1px solid rgba(124, 255, 178, 0.4);
+        padding-bottom: 3px;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+      }
+      .letter-page {
+        min-height: 0;
+        line-height: 1.3;
+      }
+      .letter-page .section-title {
+        margin: 0 0 4px;
+        padding-bottom: 3px;
+        line-height: 1.1;
+      }
+      .letter-page .letter {
+        margin: 0;
+      }
+      .letter-pager .letter p {
+        margin: 0 0 1em;
+      }
+      .letter-pager .letter p:last-child {
+        margin-bottom: 0;
+      }
+      .letter-pager-footer {
+        border-top: 1px solid rgba(124, 255, 178, 0.4);
+        padding-top: 4px;
+        color: var(--dim);
+        font-size: 17px;
+      }
+      .letter-pager-footer strong {
+        color: var(--gold);
+        font-weight: normal;
+      }
 
-  .photo-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-top:10px; max-width:900px; }
-  .photo-thumb{ aspect-ratio:1/1; border:1px solid var(--dim); background:#150c1e; cursor:pointer; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
-  .photo-thumb img{ width:100%; height:100%; object-fit:cover; }
-  .photo-thumb .idx{ position:absolute; bottom:2px; right:4px; font-size:11px; color:var(--gold); background:rgba(0,0,0,.5); padding:0 3px; }
-  .photo-fallback{ display:none; font-size:11px; color:var(--dim); text-align:center; padding:4px; }
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+        max-width: 900px;
+      }
+      .photo-thumb {
+        aspect-ratio: 1/1;
+        border: 1px solid var(--dim);
+        background: #150c1e;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .photo-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .photo-thumb .idx {
+        position: absolute;
+        bottom: 2px;
+        right: 4px;
+        font-size: 15px;
+        color: var(--gold);
+        background: rgba(0, 0, 0, 0.5);
+        padding: 0 3px;
+      }
+      .photo-fallback {
+        display: none;
+        font-size: 15px;
+        color: var(--dim);
+        text-align: center;
+        padding: 4px;
+      }
 
-  #modal{ position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:40; display:none; align-items:center; justify-content:center; padding:24px; }
-  #modal.active{ display:flex; }
-  .modal-inner{ max-width:640px; width:100%; border:1px solid var(--violet); background:#0d0716; padding:20px; max-height:90vh; overflow-y:auto; }
-  .modal-inner img{ width:100%; display:block; margin-bottom:14px; }
-  .modal-close{ float:right; cursor:pointer; color:var(--dim); border:1px solid var(--dim); padding:2px 10px; }
-  .modal-close:hover{ color:var(--pink); border-color:var(--pink); }
-  .modal-date{ color:var(--gold); font-size:14px; margin-bottom:6px; }
-  .modal-desc{ font-size:15px; }
+      #modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.88);
+        z-index: 40;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      #modal.active {
+        display: flex;
+      }
+      .modal-inner {
+        max-width: 640px;
+        width: 100%;
+        border: 1px solid var(--violet);
+        background: #0d0716;
+        padding: 20px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .modal-inner img {
+        width: 100%;
+        display: block;
+        margin-bottom: 14px;
+      }
+      .modal-close {
+        float: right;
+        cursor: pointer;
+        color: var(--dim);
+        border: 1px solid var(--dim);
+        padding: 2px 10px;
+      }
+      .modal-close:hover {
+        color: var(--pink);
+        border-color: var(--pink);
+      }
+      .modal-date {
+        color: var(--gold);
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .modal-desc {
+        font-size: 19px;
+      }
 
-  .video-wrap{ max-width:700px; margin-top:10px; }
-  video{ width:100%; border:1px solid var(--dim); background:#000; }
+      .video-wrap {
+        max-width: 700px;
+        margin-top: 10px;
+      }
+      video {
+        width: 100%;
+        border: 1px solid var(--dim);
+        background: #000;
+      }
 
-  @media (max-width:560px){
-    #biosStage,#loadStage,#termStage{ padding:16px; }
-    .pin-title{ font-size:32px; }
-    .cmos-grid,.cmos-sub-grid{ grid-template-columns:1fr; }
-  }
-</style>
-</head>
-<body>
+      @media (max-width: 560px) {
+        #biosStage,
+        #loadStage,
+        #termStage {
+          padding: 16px;
+        }
+        .pin-title {
+          font-size: 36px;
+        }
+        .term-banner {
+          max-width: 100%;
+        }
+        .term-plasma {
+          width: min(46vw, 220px);
+          height: 90px;
+        }
+        .term-banner-text .l1 {
+          font-size: 16px;
+        }
+        .term-banner-text .l2 {
+          font-size: 14px;
+        }
+        .anniv-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .cmos-grid,
+        .cmos-sub-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="crtOverlay"></div>
 
-<div id="crtOverlay"></div>
-
-<!-- BIOS -->
-<div id="biosStage" class="stage active">
-  <div id="biosText"></div>
-  <div class="bios-hint" id="biosHint" style="display:none;">Press <u>DEL</u> to enter SETUP &nbsp;&nbsp; press any other key to continue</div>
-</div>
-
-<!-- CMOS SETUP (main grid, easter egg) -->
-<div id="cmosStage" class="stage">
-  <div class="cmos-frame">
-    <div class="cmos-title">
-      <div>ROM PCI/ISA BIOS (NISSA-4.0)</div>
-      <div>RELATIONSHIP SETUP UTILITY</div>
-      <div>HUDZAIFAH &amp; NISSA INDUSTRIES, INC.</div>
+    <!-- BIOS -->
+    <div id="biosStage" class="stage active">
+      <div id="biosText"></div>
+      <div class="bios-hint" id="biosHint" style="display: none">
+        Press <u>DEL</u> to enter SETUP &nbsp;&nbsp; press any other key to
+        continue
+      </div>
     </div>
-    <div class="cmos-grid">
-      <div class="cmos-col" id="cmosColLeft"></div>
-      <div class="cmos-col" id="cmosColRight"></div>
+
+    <!-- CMOS SETUP (main grid, easter egg) -->
+    <div id="cmosStage" class="stage">
+      <div class="cmos-frame">
+        <div class="cmos-title">
+          <div>ROM PCI/ISA BIOS (NISA-4.0)</div>
+          <div>RELATIONSHIP SETUP UTILITY</div>
+          <div>HUDZAIFAH &amp; NISA INDUSTRIES, INC.</div>
+        </div>
+        <div class="cmos-grid">
+          <div class="cmos-col" id="cmosColLeft"></div>
+          <div class="cmos-col" id="cmosColRight"></div>
+        </div>
+        <div class="cmos-status" id="cmosNote"></div>
+        <div class="cmos-footer">
+          Esc : Kembali ke boot &nbsp;&nbsp;&nbsp; &uarr;&darr;&larr;&rarr; :
+          Pilih &nbsp;&nbsp;&nbsp; Enter : Buka
+        </div>
+      </div>
     </div>
-    <div class="cmos-status" id="cmosNote"></div>
-    <div class="cmos-footer">Esc : Kembali ke boot &nbsp;&nbsp;&nbsp; &uarr;&darr;&larr;&rarr; : Pilih &nbsp;&nbsp;&nbsp; Enter : Buka</div>
-  </div>
-</div>
 
-<!-- CMOS SUBMENU (opened via Enter) -->
-<div id="cmosSubStage" class="stage">
-  <div class="cmos-sub-frame">
-    <div class="cmos-title">
-      <div>ROM PCI/ISA BIOS (NISSA-4.0)</div>
-      <div id="cmosSubTitle">SUBMENU</div>
-      <div>HUDZAIFAH &amp; NISSA INDUSTRIES, INC.</div>
+    <!-- CMOS SUBMENU (opened via Enter) -->
+    <div id="cmosSubStage" class="stage">
+      <div class="cmos-sub-frame">
+        <div class="cmos-title">
+          <div>ROM PCI/ISA BIOS (NISA-4.0)</div>
+          <div id="cmosSubTitle">SUBMENU</div>
+          <div>HUDZAIFAH &amp; NISA INDUSTRIES, INC.</div>
+        </div>
+        <div class="cmos-sub-grid" id="cmosSubGrid"></div>
+        <div class="cmos-sub-footer-note" id="cmosSubFooter"></div>
+        <div class="cmos-sub-controls">Esc : Back to Main</div>
+      </div>
     </div>
-    <div class="cmos-sub-grid" id="cmosSubGrid"></div>
-    <div class="cmos-sub-footer-note" id="cmosSubFooter"></div>
-    <div class="cmos-sub-controls">Esc : Back to Main</div>
-  </div>
-</div>
 
-<!-- LOADING -->
-<div id="loadStage" class="stage">
-  <div class="load-title">NISSA OS 4.0.15 (Anniversary Station)</div>
-  <div id="loadLines"></div>
-</div>
-
-<!-- PIN -->
-<div id="pinStage" class="stage">
-  <div class="pin-box">
-    <div class="pin-title">NISSA-OS</div>
-    <div class="pin-sub">ENTER ACCESS CODE</div>
-    <div class="pin-dots" id="pinDots">
-      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
-      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    <!-- CMOS DETAIL -->
+    <div id="cmosDetailStage" class="stage">
+      <div class="cmos-detail-frame">
+        <div class="cmos-title">
+          <div>ROM PCI/ISA BIOS (NISA-4.0)</div>
+          <div id="cmosDetailMenu">RELATIONSHIP DETAIL</div>
+          <div>HUDZAIFAH &amp; NISA INDUSTRIES, INC.</div>
+        </div>
+        <div class="cmos-detail-title" id="cmosDetailTitle"></div>
+        <div class="cmos-detail-value" id="cmosDetailValue"></div>
+        <div class="cmos-detail-romance" id="cmosDetailRomance"></div>
+        <div class="cmos-detail-controls">Esc : Back to Submenu</div>
+      </div>
     </div>
-    <div class="pin-error" id="pinError"></div>
-    <input id="pinHidden" type="tel" inputmode="numeric" maxlength="8" autocomplete="off">
-  </div>
-</div>
 
-<!-- TERMINAL -->
-<div id="termStage" class="stage">
-  <div class="term-banner">
-    <div class="term-ascii">   .    .
-  .:'  ':.
-:'  /\  ':
-:  ( HN )  :
- ':. \/ .:'
-   ':,,:'
-     ''</div>
-    <div class="term-banner-text">
-      <div class="l1">NISSA OS release 4.0 (hudzaifah-derived)</div>
-      <div class="l2">Kernel LOVE 2.6 on an i-love-you</div>
+    <!-- LOADING -->
+    <div id="loadStage" class="stage">
+      <div class="load-title">NISA OS 4.0.15 (Anniversary Station)</div>
+      <div id="loadLines"></div>
     </div>
-  </div>
-  <div class="term-meta" id="lastLogin"></div>
-  <div class="term-hint">Ketik <b>help</b> untuk daftar perintah &middot; Ctrl+C untuk batal</div>
-  <div id="screen"></div>
-  <div id="inputRow">
-    <span id="prompt"><span class="p1">/home/hudzaifah</span><span class="p2">(nissa)</span> <span class="p3">&raquo;</span></span>
-    <input id="cmdInput" autocomplete="off" spellcheck="false">
-  </div>
-</div>
 
-<!-- MODAL -->
-<div id="modal">
-  <div class="modal-inner">
-    <span class="modal-close" id="modalClose">x close</span>
-    <img id="modalImg" src="" alt="">
-    <div class="modal-date" id="modalDate"></div>
-    <div class="modal-desc" id="modalDesc"></div>
-  </div>
-</div>
+    <!-- PIN -->
+    <div id="pinStage" class="stage">
+      <div class="pin-box">
+        <div class="pin-title">NISA-OS</div>
+        <div class="pin-sub">ENTER ACCESS CODE</div>
+        <div class="pin-dots" id="pinDots">
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+        </div>
+        <div class="pin-error" id="pinError"></div>
+        <input
+          id="pinHidden"
+          type="tel"
+          inputmode="numeric"
+          maxlength="8"
+          autocomplete="off"
+        />
+      </div>
+    </div>
 
-<script>
-/* ============ CONFIG ============ */
-const PIN = "10052026";
-const ANNIV_DATE = new Date(2026, 4, 10); // 10 Mei 2026
-const USER_NAME = "Hudzaifah";
-const PARTNER_NAME = "Nissa";
-const PHOTO_COUNT = 25;
+    <!-- TERMINAL -->
+    <div id="termStage" class="stage">
+      <div class="term-banner">
+        <div class="term-ascii">
+          <canvas id="termPlasma" class="term-plasma"></canvas>
+        </div>
+        <div class="term-banner-text">
+          <div class="l1">NISA OS release 4.0 (hudzaifah-derived)</div>
+          <div class="l2">Kernel LOVE 2.6 on an i-love-you</div>
+        </div>
+      </div>
+      <div class="term-meta" id="lastLogin"></div>
+      <div class="term-hint">
+        Ketik <b>help</b> untuk daftar perintah &middot; Ctrl+C untuk batal
+      </div>
+      <div id="screen"></div>
+      <div id="inputRow">
+        <span id="prompt"
+          ><span class="p1">/home/hudzaifah</span><span class="p2">(nisa)</span>
+          <span class="p3">&raquo;</span></span
+        >
+        <input id="cmdInput" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
 
-let CURRENT_STAGE = 'bios';
+    <!-- MODAL -->
+    <div id="modal">
+      <div class="modal-inner">
+        <span class="modal-close" id="modalClose">x close</span>
+        <img id="modalImg" src="" alt="" />
+        <div class="modal-date" id="modalDate"></div>
+        <div class="modal-desc" id="modalDesc"></div>
+      </div>
+    </div>
 
-function showStage(id, name){
-  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  CURRENT_STAGE = name;
-}
+    <script>
+      /* ============ CONFIG ============ */
+      const PIN = "10052026";
+      const ANNIV_DATE = new Date(2026, 4, 10); // 10 Mei 2026
+      const USER_NAME = "Hudzaifah";
+      const PARTNER_FULL_NAME = "Anisa Dwiasmara Edi Prabowo";
+      const PARTNER_NAME = "Nisa";
+      const PHOTO_COUNT = 25;
 
-/* ============ BIOS STAGE ============ */
-const biosLines = [
-  "HUDZ Modular BIOS v4.05, An Anniversary Ally",
-  "Copyright (C) 2026, Hudzaifah's Heart Industries",
-  "",
-  "NISSA-CORE R4.0  Build.10.May.2026     Heart Inc.",
-  "Emotional Chipset 490X PCI BIOS for NISSA V.4.0",
-  "Check System Health OK, Vibe = 100%",
-  "",
-  "Main Processor  : LOVE-CORE i9, overclocked since Mei",
-  "Memory Testing  : 999999999K OK",
-  "",
-  "Plug and Play BIOS Extension v1.0",
-  "  Initialize Plug and Play Cards...",
-  "  Card-01: Butterflies-In-Stomach.sys",
-  "  Card-02: Overthinking.sys ......... disabled by user",
-  "  PNP Init Completed",
-  "",
-  "Detecting Storage Devices...",
-  "  Primary Master   ... MEMORIES (25 photos, 1 video)",
-  "  Secondary Master ... FEELINGS (too much to store)",
-  "",
-  "ANNIVERSARY PROTOCOL: Station NISSA",
-  "Asset tag: 10-05-2026            Push every day",
-  ""
-];
+      let CURRENT_STAGE = "bios";
 
-let biosState = { line: 0, timer: null, finished: false };
-const biosTextEl = document.getElementById('biosText');
+      function showStage(id, name) {
+        document
+          .querySelectorAll(".stage")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        CURRENT_STAGE = name;
+      }
 
-function resetBios(){
-  clearTimeout(biosState.timer);
-  biosTextEl.textContent = "";
-  document.getElementById('biosHint').style.display = 'none';
-  biosState = { line: 0, timer: null, finished: false };
-  showStage('biosStage', 'bios');
-  typeBiosLine();
-}
+      /* ============ BIOS STAGE ============ */
+      const biosLines = [
+        "HUDZ Modular BIOS v4.05, An Anniversary Ally",
+        "Copyright (C) 2026, Hudzaifah's Heart Industries",
+        "",
+        "NISA-CORE R4.0  Build.10.May.2026     Heart Inc.",
+        "Emotional Chipset 490X PCI BIOS for NISA V.4.0",
+        "Check System Health OK, Vibe = 100%",
+        "",
+        "Main Processor  : LOVE-CORE i9, overclocked since Mei",
+        "Memory Testing  : 999999999K OK",
+        "",
+        "Plug and Play BIOS Extension v1.0",
+        "  Initialize Plug and Play Cards...",
+        "  Card-01: Butterflies-In-Stomach.sys",
+        "  Card-02: Overthinking.sys ......... disabled by user",
+        "  PNP Init Completed",
+        "",
+        "Detecting Storage Devices...",
+        "  Primary Master   ... MEMORIES (25 photos, 1 video)",
+        "  Secondary Master ... FEELINGS (too much to store)",
+        "",
+        "ANNIVERSARY PROTOCOL: Station NISA",
+        "Asset tag: 10-05-2026            Push every day",
+        "",
+      ];
 
-function typeBiosLine(){
-  if(biosState.line >= biosLines.length){
-    biosState.finished = true;
-    document.getElementById('biosHint').style.display = 'block';
-    return;
-  }
-  const line = biosLines[biosState.line];
-  let ci = 0;
-  function typeChar(){
-    biosTextEl.textContent = biosLines.slice(0, biosState.line).join("\n") + (biosState.line>0?"\n":"") + line.slice(0, ci);
-    if(ci <= line.length){
-      ci++;
-      biosState.timer = setTimeout(typeChar, line === "" ? 0 : 10);
-    } else {
-      biosState.line++;
-      biosState.timer = setTimeout(typeBiosLine, 45);
-    }
-  }
-  typeChar();
-}
+      let biosState = { line: 0, timer: null, finished: false };
+      const biosTextEl = document.getElementById("biosText");
 
-/* ============ CMOS SETUP (main grid) ============ */
-const cmosLeft = [
-  { label:"Standard CMOS Setup",
-    sub:[["Partner","Hudzaifah & Nissa"],["Relationship Started","10 May 2026"],["Current Status","Very Taken"],["Daily Backup","I Love You (auto-saved)"]],
-    footer:"Time, Date, Us — since 10 May 2026" },
-  { label:"Chipset Features Setup",
-    sub:[["Inside Jokes Cache","Full, still adding more"],["Random Facts About You","Loaded"],["Overthinking Clock Speed","Throttled"],["Trust Level","Maximum"]],
-    footer:"Chipset tuned for us, not for anyone else" },
-  { label:"PNP/PCI Configurations",
-    sub:[["Future Plan Slot 1","Traveling Together"],["Future Plan Slot 2","Meeting The Family"],["Future Plan Slot 3","TBD (still a secret)"],["Plug and Play","You Plugged Right Into My Life"]],
-    footer:"Plug and play, plan and plan" },
-  { label:"Load BIOS Defaults",
-    sub:[["Default Mood","Missing You"],["Default Playlist","Our Songs"],["Default Plan","Text You First"]],
-    footer:"Reset to what matters most" },
-  { label:"Supervisor Password",
-    sub:[["Supervisor","Hudzaifah"],["Access Level","Unlimited, Forever"]],
-    footer:"Only supervisor allowed: you know who" },
-  { label:"IDE HDD Auto Detection",
-    sub:[["Primary Master","MEMORIES (25 photos, 1 video, still growing)"],["Secondary Master","FEELINGS (unlimited storage)"],["Auto Detect Result","You. Definitely You."]],
-    footer:"Detected and confirmed: it's you" },
-  { label:"Exit Without Saving",
-    sub:[["Exit Without You?","Option Not Available"],["Confirm","There Is No Confirm Button"]],
-    footer:"This option doesn't actually exist for us" },
-];
-const cmosRight = [
-  { label:"BIOS Features Setup",
-    sub:[["Love Language","Quality Time"],["Boot Priority","You, Always First"],["Fast Boot","Straight To Your Heart"],["Anti-Virus Warning","Disabled (immune to anyone else)"]],
-    footer:"Optimized just for Nissa" },
-  { label:"Power Management Setup",
-    sub:[["Energy Saving Mode","Disabled For You"],["Sleep Timer","Never Gets Tired Of You"],["Auto Shutdown","Not While You're Around"]],
-    footer:"No power-saving when it comes to you" },
-  { label:"Integrated Peripherals",
-    sub:[["Integrated Cuddles","Active 24/7"],["Integrated Hand-Holding","Enabled"],["Good Morning Texts","Running Daily"]],
-    footer:"Everything about you, built right in" },
-  { label:"Load Optimum Settings",
-    sub:[["Optimum Happiness","Being With You"],["Optimum Volume","Your Laugh"],["Optimum Temperature","Your Hugs"]],
-    footer:"Already running at optimum, thanks to you" },
-  { label:"User Password",
-    sub:[["User","Nissa"],["Access Level","Full Access To My Heart"]],
-    footer:"No password needed, you're already in" },
-  { label:"Save & Exit Setup",
-    sub:[["Save Memories","Yes, All Of Them"],["Continue Relationship","Yes, Obviously"]],
-    footer:"Saving, and looking forward to more" },
-];
+      function resetBios() {
+        clearTimeout(biosState.timer);
+        clearTimeout(loadTimer);
+        biosTextEl.textContent = "";
+        document.getElementById("biosHint").style.display = "none";
+        biosState = { line: 0, timer: null, finished: false };
+        showStage("biosStage", "bios");
+        typeBiosLine();
+      }
 
-let cmosSel = { col: 0, row: 0 };
+      function typeBiosLine() {
+        if (biosState.line >= biosLines.length) {
+          biosState.finished = true;
+          document.getElementById("biosHint").style.display = "block";
+          return;
+        }
+        const line = biosLines[biosState.line];
+        let ci = 0;
+        function typeChar() {
+          biosTextEl.textContent =
+            biosLines.slice(0, biosState.line).join("\n") +
+            (biosState.line > 0 ? "\n" : "") +
+            line.slice(0, ci);
+          if (ci <= line.length) {
+            ci++;
+            biosState.timer = setTimeout(typeChar, line === "" ? 0 : 10);
+          } else {
+            biosState.line++;
+            biosState.timer = setTimeout(typeBiosLine, 45);
+          }
+        }
+        typeChar();
+      }
 
-function cmosColArr(col){ return col === 0 ? cmosLeft : cmosRight; }
-function cmosCurrentItem(){ return cmosColArr(cmosSel.col)[cmosSel.row]; }
+      /* ============ CMOS SETUP (main grid) ============ */
+      const cmosLeft = [
+        {
+          label: "Standard CMOS Setup",
+          sub: [
+            ["Partner", "Hudzaifah & Nisa"],
+            ["Relationship Started", "10 May 2026"],
+            ["Current Status", "Very Taken"],
+            ["Daily Backup", "I Love You (auto-saved)"],
+          ],
+          footer: "Time, Date, Us — since 10 May 2026",
+        },
+        {
+          label: "Chipset Features Setup",
+          sub: [
+            ["Inside Jokes Cache", "Full, still adding more"],
+            ["Random Facts About You", "Loaded"],
+            ["Overthinking Clock Speed", "Throttled"],
+            ["Trust Level", "Maximum"],
+          ],
+          footer: "Chipset tuned for us, not for anyone else",
+        },
+        {
+          label: "PNP/PCI Configurations",
+          sub: [
+            ["Future Plan Slot 1", "Traveling Together"],
+            ["Future Plan Slot 2", "Meeting The Family"],
+            ["Future Plan Slot 3", "TBD (still a secret)"],
+            ["Plug and Play", "You Plugged Right Into My Life"],
+          ],
+          footer: "Plug and play, plan and plan",
+        },
+        {
+          label: "Load BIOS Defaults",
+          sub: [
+            ["Default Mood", "Missing You"],
+            ["Default Playlist", "Our Songs"],
+            ["Default Plan", "Text You First"],
+          ],
+          footer: "Reset to what matters most",
+        },
+        {
+          label: "Supervisor Password",
+          sub: [
+            ["Supervisor", "Hudzaifah"],
+            ["Access Level", "Unlimited, Forever"],
+          ],
+          footer: "Only supervisor allowed: you know who",
+        },
+        {
+          label: "IDE HDD Auto Detection",
+          sub: [
+            ["Primary Master", "MEMORIES (25 photos, 1 video, still growing)"],
+            ["Secondary Master", "FEELINGS (unlimited storage)"],
+            ["Auto Detect Result", "You. Definitely You."],
+          ],
+          footer: "Detected and confirmed: it's you",
+        },
+        {
+          label: "Exit Without Saving",
+          sub: [
+            ["Exit Without You?", "Option Not Available"],
+            ["Confirm", "There Is No Confirm Button"],
+          ],
+          footer: "This option doesn't actually exist for us",
+        },
+      ];
+      const cmosRight = [
+        {
+          label: "BIOS Features Setup",
+          sub: [
+            ["Love Language", "Quality Time"],
+            ["Boot Priority", "You, Always First"],
+            ["Fast Boot", "Straight To Your Heart"],
+            ["Anti-Virus Warning", "Disabled (immune to anyone else)"],
+          ],
+          footer: "Optimized just for Nisa",
+        },
+        {
+          label: "Power Management Setup",
+          sub: [
+            ["Energy Saving Mode", "Disabled For You"],
+            ["Sleep Timer", "Never Gets Tired Of You"],
+            ["Auto Shutdown", "Not While You're Around"],
+          ],
+          footer: "No power-saving when it comes to you",
+        },
+        {
+          label: "Integrated Peripherals",
+          sub: [
+            ["Integrated Cuddles", "Active 24/7"],
+            ["Integrated Hand-Holding", "Enabled"],
+            ["Good Morning Texts", "Running Daily"],
+          ],
+          footer: "Everything about you, built right in",
+        },
+        {
+          label: "Load Optimum Settings",
+          sub: [
+            ["Optimum Happiness", "Being With You"],
+            ["Optimum Volume", "Your Laugh"],
+            ["Optimum Temperature", "Your Hugs"],
+          ],
+          footer: "Already running at optimum, thanks to you",
+        },
+        {
+          label: "User Password",
+          sub: [
+            ["User", "Nisa"],
+            ["Access Level", "Full Access To My Heart"],
+          ],
+          footer: "No password needed, you're already in",
+        },
+        {
+          label: "Save & Exit Setup",
+          sub: [
+            ["Save Memories", "Yes, All Of Them"],
+            ["Continue Relationship", "Yes, Obviously"],
+          ],
+          footer: "Saving, and looking forward to more",
+        },
+      ];
 
-function renderCmos(){
-  const leftEl = document.getElementById('cmosColLeft');
-  const rightEl = document.getElementById('cmosColRight');
-  leftEl.innerHTML = ""; rightEl.innerHTML = "";
-  cmosLeft.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = 'cmos-item' + (cmosSel.col===0 && cmosSel.row===i ? ' selected' : '');
-    div.textContent = item.label;
-    leftEl.appendChild(div);
-  });
-  cmosRight.forEach((item, i) => {
-    const div = document.createElement('div');
-    div.className = 'cmos-item' + (cmosSel.col===1 && cmosSel.row===i ? ' selected' : '');
-    div.textContent = item.label;
-    rightEl.appendChild(div);
-  });
-  document.getElementById('cmosNote').textContent = cmosCurrentItem().footer;
-}
+      const cmosRomance = {
+        "Standard CMOS Setup": [
+          "The day we began became one of the sweetest dates in my life. I would choose that day again because it led me to you.",
+          "Every moment with you gives ordinary time a beautiful meaning. I never want to rush the days we get to share.",
+          "Being yours feels like the safest status my heart has ever known. I hope you always feel how deeply you are loved.",
+          "My favorite daily backup is the thought of you. It is the one memory that makes every difficult day feel gentle again.",
+        ],
+        "Chipset Features Setup": [
+          "Our inside jokes are tiny pieces of a world that belongs only to us. I love how one look from you can make me smile instantly.",
+          "I love learning every small detail about you. The more I know, the more reasons I find to fall for you again.",
+          "You make my thoughts feel calmer when they start running too fast. Somehow, your presence always brings me back to peace.",
+          "Trusting you feels natural because you have treated my heart with so much care. I hope I always make you feel just as safe.",
+        ],
+        "PNP/PCI Configurations": [
+          "The idea of traveling with you makes every destination feel special. I want to collect beautiful places and beautiful memories by your side.",
+          "Meeting the people you love would mean becoming part of more of your world. That is something I would look forward to with all my heart.",
+          "Some plans are more exciting when they are still secret. Whatever the surprise is, I hope we get to discover it together.",
+          "You fit into my life so naturally that being with you feels less like a change and more like coming home.",
+        ],
+        "Load BIOS Defaults": [
+          "If my heart had a default mood, it would be missing you whenever you are away. Even distance reminds me how much you mean to me.",
+          "Every song feels warmer when it reminds me of you. I hope our own soundtrack keeps growing with every memory we make.",
+          "My favorite plan is still texting you first and hearing from you. It is a simple thing that can make my entire day brighter.",
+        ],
+        "Supervisor Password": [
+          "You are the only person I want to trust with the most private parts of my heart. With you, being vulnerable feels beautiful instead of frightening.",
+          "You have unlimited access because you earned it with patience, honesty, and love. I would never want to lock you out of my heart.",
+        ],
+        "IDE HDD Auto Detection": [
+          "Our memories are the kind of treasure I want to revisit forever. Every photo brings back a feeling I never want to lose.",
+          "My feelings for you do not run out of space. They keep growing with every conversation, every laugh, and every quiet moment together.",
+          "The system checked every possibility and reached the same answer. You are the one my heart has been looking for.",
+        ],
+        "Exit Without Saving": [
+          "There is no way to leave a life that has you in it. You are not an option I could ever throw away.",
+          "Even if there were a confirmation button, I would never press it. Choosing you is the easiest decision my heart has ever made.",
+        ],
+        "BIOS Features Setup": [
+          "Quality time with you is my favorite kind of luxury. I do not need anything grand when I can simply sit beside you and feel happy.",
+          "You are always first in the places that matter most. My heart finds its direction whenever it thinks of you.",
+          "With you, I never want to waste time pretending to be someone else. You make it easy to go straight to what feels real.",
+          "Nothing outside of us can change what I feel for you. My heart has already chosen its favorite person.",
+        ],
+        "Power Management Setup": [
+          "I would never put my love for you into energy saving mode. Caring for you gives my days a kind of energy I never knew I needed.",
+          "I could listen to you and stay close to you for hours without ever getting tired. Time feels different when it is spent with you.",
+          "There is no moment when I want my love for you to shut down. Even in quiet moments, my heart is still choosing you.",
+        ],
+        "Integrated Peripherals": [
+          "The comfort of your hugs is something I carry with me long after you let go. They make the whole world feel softer.",
+          "Holding your hand makes even an ordinary walk feel like a beautiful adventure. I never want to stop reaching for you.",
+          "Your good morning texts have a way of changing the entire shape of my day. Seeing your name is one of my favorite beginnings.",
+        ],
+        "Load Optimum Settings": [
+          "The happiest version of me is the one who gets to be with you. You make joy feel simple and completely real.",
+          "Your laugh is one of my favorite sounds in the world. I would gladly spend a lifetime finding new reasons to hear it.",
+          "Your hugs make every place feel warmer. If comfort had a temperature, it would feel exactly like being held by you.",
+        ],
+        "User Password": [
+          "You never needed a password because my heart recognized you before I knew how to explain it. You have always felt like someone meant to be here.",
+          "You have full access to my heart because I want you to know the real me. With you, honesty feels safe and love feels easy.",
+        ],
+        "Save & Exit Setup": [
+          "I want to save every memory we make, even the small ones that nobody else would notice. They become precious simply because they belong to us.",
+          "There is no exit from a future I want to build with you. I want to keep choosing us through every version of tomorrow.",
+        ],
+      };
 
-function enterCmos(){
-  clearTimeout(biosState.timer);
-  cmosSel = { col:0, row:0 };
-  renderCmos();
-  showStage('cmosStage', 'cmos');
-}
+      let cmosSel = { col: 0, row: 0 };
+      let cmosSubSel = { row: 0, col: 0 };
 
-function cmosMove(dir){
-  const item = cmosCurrentItem();
-  if(dir === 'down'){
-    const len = cmosColArr(cmosSel.col).length;
-    cmosSel.row = (cmosSel.row + 1) % len;
-  } else if(dir === 'up'){
-    const len = cmosColArr(cmosSel.col).length;
-    cmosSel.row = (cmosSel.row - 1 + len) % len;
-  } else if(dir === 'left'){
-    if(cmosSel.col === 1){
-      cmosSel.col = 0;
-      cmosSel.row = Math.min(cmosSel.row, cmosLeft.length - 1);
-    }
-  } else if(dir === 'right'){
-    if(cmosSel.col === 0){
-      cmosSel.col = 1;
-      cmosSel.row = Math.min(cmosSel.row, cmosRight.length - 1);
-    }
-  }
-  renderCmos();
-}
+      function cmosColArr(col) {
+        return col === 0 ? cmosLeft : cmosRight;
+      }
+      function cmosCurrentItem() {
+        return cmosColArr(cmosSel.col)[cmosSel.row];
+      }
 
-/* ============ CMOS SUBMENU ============ */
-function openCmosSub(){
-  const item = cmosCurrentItem();
-  document.getElementById('cmosSubTitle').textContent = item.label.toUpperCase();
-  const grid = document.getElementById('cmosSubGrid');
-  grid.innerHTML = "";
-  item.sub.forEach((pair, i) => {
-    const row = document.createElement('div');
-    row.className = 'cmos-sub-row' + (i === 0 ? ' first' : '');
-    row.innerHTML = `<span>${pair[0]}</span><span class="val">${pair[1]}</span>`;
-    grid.appendChild(row);
-  });
-  document.getElementById('cmosSubFooter').textContent = item.footer;
-  showStage('cmosSubStage', 'cmosSub');
-}
+      function renderCmos() {
+        const leftEl = document.getElementById("cmosColLeft");
+        const rightEl = document.getElementById("cmosColRight");
+        leftEl.innerHTML = "";
+        rightEl.innerHTML = "";
+        cmosLeft.forEach((item, i) => {
+          const div = document.createElement("div");
+          div.className =
+            "cmos-item" +
+            (cmosSel.col === 0 && cmosSel.row === i ? " selected" : "");
+          div.textContent = item.label;
+          leftEl.appendChild(div);
+        });
+        cmosRight.forEach((item, i) => {
+          const div = document.createElement("div");
+          div.className =
+            "cmos-item" +
+            (cmosSel.col === 1 && cmosSel.row === i ? " selected" : "");
+          div.textContent = item.label;
+          rightEl.appendChild(div);
+        });
+        document.getElementById("cmosNote").textContent =
+          cmosCurrentItem().footer;
+      }
 
-function closeCmosSub(){
-  showStage('cmosStage', 'cmos');
-  renderCmos();
-}
+      function enterCmos() {
+        clearTimeout(biosState.timer);
+        clearTimeout(loadTimer);
+        cmosSel = { col: 0, row: 0 };
+        renderCmos();
+        showStage("cmosStage", "cmos");
+      }
 
-/* ============ LOADING STAGE ============ */
-const loadItems = [
-  "Mounting /memories filesystem",
-  "Activating heart partitions",
-  "Setting hostname nissa",
-  "Checking relationship filesystem (ext-love)",
-  "Loading affection module (hugs)",
-  "Bringing up interface eth-love0",
-  "Setting clock from anniversary date",
-  "Starting memory logger",
-  "Starting mood logger",
-  "Starting cuddle daemon"
-];
+      function cmosMove(dir) {
+        const item = cmosCurrentItem();
+        if (dir === "down") {
+          const len = cmosColArr(cmosSel.col).length;
+          cmosSel.row = (cmosSel.row + 1) % len;
+        } else if (dir === "up") {
+          const len = cmosColArr(cmosSel.col).length;
+          cmosSel.row = (cmosSel.row - 1 + len) % len;
+        } else if (dir === "left") {
+          if (cmosSel.col === 1) {
+            cmosSel.col = 0;
+            cmosSel.row = Math.min(cmosSel.row, cmosLeft.length - 1);
+          }
+        } else if (dir === "right") {
+          if (cmosSel.col === 0) {
+            cmosSel.col = 1;
+            cmosSel.row = Math.min(cmosSel.row, cmosRight.length - 1);
+          }
+        }
+        renderCmos();
+      }
 
-function runLoadStage(){
-  showStage('loadStage', 'loading');
-  const container = document.getElementById('loadLines');
-  container.innerHTML = "";
-  let i = 0;
-  function next(){
-    if(i >= loadItems.length){
-      setTimeout(showPinStage, 400);
-      return;
-    }
-    const row = document.createElement('div');
-    row.className = 'load-line';
-    row.innerHTML = `<span>${loadItems[i]}:</span><span class="ok">[ OK ]</span>`;
-    container.appendChild(row);
-    i++;
-    setTimeout(next, 140);
-  }
-  next();
-}
+      /* ============ CMOS SUBMENU ============ */
+      function openCmosSub() {
+        const item = cmosCurrentItem();
+        cmosSubSel = { row: 0, col: 0 };
+        document.getElementById("cmosSubTitle").textContent =
+          item.label.toUpperCase();
+        const grid = document.getElementById("cmosSubGrid");
+        grid.innerHTML = "";
+        item.sub.forEach((pair, i) => {
+          const row = document.createElement("div");
+          row.className =
+            "cmos-sub-row" + (i === cmosSubIndex(item) ? " first" : "");
+          row.innerHTML = `<span>${pair[0]}</span><span class="val">${pair[1]}</span>`;
+          grid.appendChild(row);
+        });
+        document.getElementById("cmosSubFooter").textContent = item.footer;
+        showStage("cmosSubStage", "cmosSub");
+      }
 
-/* ============ PIN STAGE ============ */
-const pinHidden = document.getElementById('pinHidden');
-const pinDots = document.querySelectorAll('.pin-dot');
-const pinError = document.getElementById('pinError');
-const pinBox = document.querySelector('.pin-box');
-let pinValue = "";
+      function cmosSubIndex(item) {
+        return cmosSubSel.row * 2 + cmosSubSel.col;
+      }
 
-function showPinStage(){
-  showStage('pinStage', 'pin');
-  if(document.activeElement) document.activeElement.blur();
-  focusPinInput();
-}
-function focusPinInput(){
-  if(CURRENT_STAGE === 'pin') pinHidden.focus();
-}
-// Any click anywhere while on the PIN stage re-focuses the hidden PIN input,
-// so the person never has to hunt for a text box to type into.
-document.addEventListener('click', () => { if(CURRENT_STAGE === 'pin') focusPinInput(); });
-pinHidden.addEventListener('blur', () => { if(CURRENT_STAGE === 'pin') setTimeout(focusPinInput, 10); });
+      function renderCmosSub() {
+        const item = cmosCurrentItem();
+        const rows = document.querySelectorAll(".cmos-sub-row");
+        rows.forEach((row, i) => {
+          row.classList.toggle("first", i === cmosSubIndex(item));
+        });
+        document.getElementById("cmosSubTitle").textContent =
+          item.label.toUpperCase();
+        document.getElementById("cmosSubFooter").textContent = item.footer;
+      }
 
-pinHidden.addEventListener('input', (e) => {
-  pinValue = e.target.value.replace(/\D/g,'').slice(0,8);
-  e.target.value = pinValue;
-  pinDots.forEach((dot,i) => dot.classList.toggle('filled', i < pinValue.length));
-  if(pinValue.length === 8) checkPin();
-});
+      function cmosSubMove(dir) {
+        const item = cmosCurrentItem();
+        const rowCount = Math.ceil(item.sub.length / 2);
+        if (dir === "down") {
+          cmosSubSel.row = (cmosSubSel.row + 1) % rowCount;
+          if (cmosSubIndex(item) >= item.sub.length) cmosSubSel.col = 0;
+          renderCmosSub();
+        } else if (dir === "up") {
+          cmosSubSel.row = (cmosSubSel.row - 1 + rowCount) % rowCount;
+          if (cmosSubIndex(item) >= item.sub.length) cmosSubSel.col = 0;
+          renderCmosSub();
+        } else if (dir === "left") {
+          cmosSubSel.col = 0;
+          renderCmosSub();
+        } else if (dir === "right") {
+          if (cmosSubSel.row * 2 + 1 < item.sub.length) {
+            cmosSubSel.col = 1;
+          }
+          renderCmosSub();
+        }
+      }
 
-function checkPin(){
-  if(pinValue === PIN){
-    pinError.style.color = 'var(--ok)';
-    pinError.textContent = "ACCESS GRANTED";
-    setTimeout(enterTerminal, 600);
-  } else {
-    pinError.style.color = 'var(--danger)';
-    pinError.textContent = "ACCESS DENIED — TRY AGAIN";
-    pinBox.classList.add('shake');
-    setTimeout(() => {
-      pinBox.classList.remove('shake');
-      pinValue = "";
-      pinHidden.value = "";
-      pinDots.forEach(dot => dot.classList.remove('filled'));
-    }, 400);
-  }
-}
+      function showCmosRomance() {
+        const item = cmosCurrentItem();
+        const pair = item.sub[cmosSubIndex(item)];
+        document.getElementById("cmosDetailMenu").textContent =
+          item.label.toUpperCase();
+        document.getElementById("cmosDetailTitle").textContent = pair[0];
+        document.getElementById("cmosDetailValue").textContent = pair[1];
+        document.getElementById("cmosDetailRomance").textContent =
+          cmosRomance[item.label][cmosSubIndex(item)];
+        showStage("cmosDetailStage", "cmosDetail");
+      }
 
-/* ============ TERMINAL STAGE ============ */
-function enterTerminal(){
-  showStage('termStage', 'terminal');
-  document.getElementById('lastLogin').textContent =
-    "Last login: " + new Date().toString().slice(0,24) + " on tty-heart";
-  printLine("ACCESS GRANTED. Selamat datang, " + PARTNER_NAME + ".", "gold");
-  printLine("");
-  document.getElementById('cmdInput').focus();
-}
+      function closeCmosDetail() {
+        showStage("cmosSubStage", "cmosSub");
+        renderCmosSub();
+      }
 
-const screen = document.getElementById('screen');
-const cmdInput = document.getElementById('cmdInput');
-const PROMPT_TEXT = "/home/hudzaifah(nissa) » ";
-let inputMode = 'command'; // 'command' | 'quiz' | 'sudoPassword'
+      function closeCmosSub() {
+        showStage("cmosStage", "cmos");
+        renderCmos();
+      }
 
-function printLine(text, cls){
-  const div = document.createElement('div');
-  div.className = 'line' + (cls ? ' ' + cls : '');
-  div.textContent = text;
-  screen.appendChild(div);
-  screen.scrollTop = screen.scrollHeight;
-}
-function printHTML(html){
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  screen.appendChild(div);
-  screen.scrollTop = screen.scrollHeight;
-}
+      /* ============ LOADING STAGE ============ */
+      const loadItems = [
+        "Mounting /memories filesystem",
+        "Activating heart partitions",
+        "Setting hostname nisa",
+        "Checking relationship filesystem (ext-love)",
+        "Loading affection module (hugs)",
+        "Bringing up interface eth-love0",
+        "Setting clock from anniversary date",
+        "Starting memory logger",
+        "Starting mood logger",
+        "Starting cuddle daemon",
+      ];
+      let loadTimer = null;
 
-function daysTogether(){
-  return Math.floor((new Date() - ANNIV_DATE) / (1000*60*60*24));
-}
+      function runLoadStage() {
+        clearTimeout(loadTimer);
+        showStage("loadStage", "loading");
+        const container = document.getElementById("loadLines");
+        container.innerHTML = "";
+        let i = 0;
+        function next() {
+          if (i >= loadItems.length) {
+            loadTimer = setTimeout(showPinStage, 400);
+            return;
+          }
+          const row = document.createElement("div");
+          row.className = "load-line";
+          row.innerHTML = `<span>${loadItems[i]}:</span><span class="ok">[ OK ]</span>`;
+          container.appendChild(row);
+          i++;
+          loadTimer = setTimeout(next, 140);
+        }
+        next();
+      }
 
-const commands = {
-  help: () => {
-    printLine("DAFTAR PERINTAH:", "gold");
-    printLine("  whoami     - siapa kamu di sistem ini");
-    printLine("  letter     - baca surat untuk " + PARTNER_NAME);
-    printLine("  photos     - buka galeri foto kami");
-    printLine("  video      - putar video kenangan");
-    printLine("  anniv      - sudah berapa lama kita bersama");
-    printLine("  quiz       - main tebak-tebakan tentang kita");
-    printLine("  hack       - ehm... coba aja sendiri");
-    printLine("  scan       - scan sistem, cari 'ancaman'");
-    printLine("  matrix     - ???");
-    printLine("  decrypt    - buka pesan rahasia yang terenkripsi");
-    printLine("  ping       - cek koneksi ke hati Nissa");
-    printLine("  clear      - bersihkan layar");
-    printLine("");
-  },
-  whoami: () => {
-    printLine("USER: " + PARTNER_NAME, "gold");
-    printLine("ACCESS LEVEL: seluruh hatiku");
-    printLine("STATUS: paling disayang, paling dicari kalau lagi jauh");
-    printLine("");
-  },
-  anniv: () => {
-    printLine("Hari ini adalah hari ke-" + daysTogether() + " kita bersama.", "pink");
-    printLine("Semoga masih banyak hari ke depan yang bisa dihitung. :)");
-    printLine("");
-  },
-  letter: () => {
-    printHTML(`
-      <div class="section-title">DEAR NISSA</div>
-      <div class="letter">
-        <p>Dear Nissa,</p>
-        <p>Aku nggak pernah pintar merangkai kata, tapi malam ini aku coba, karena kamu pantas dapat lebih dari sekadar ucapan singkat.</p>
-        <p>Empat bulan bukan waktu yang panjang kalau dibandingkan dengan rencana-rencana yang aku susun diam-diam soal kita ke depannya. Tapi buatku, empat bulan ini cukup untuk aku sadar satu hal: aku suka caramu [isi kenangan spesifik di sini].</p>
-        <p>Aku masih ingat [ceritakan momen pertama kalian bertemu atau jadian di sini]. Sejak itu, hari-hariku jadi punya alasan buat ditunggu.</p>
-        <p>Terima kasih sudah sabar sama aku, sudah mau dengerin cerita-cerita nggak penting, dan sudah tetap ada meskipun kadang aku nggak sempurna.</p>
-        <p>Selamat empat bulan, Nissa. Ini baru permulaan.</p>
-        <p style="text-align:right;">— Hudzaifah</p>
+      /* ============ PIN STAGE ============ */
+      const pinHidden = document.getElementById("pinHidden");
+      const pinDots = document.querySelectorAll(".pin-dot");
+      const pinError = document.getElementById("pinError");
+      const pinBox = document.querySelector(".pin-box");
+      let pinValue = "";
+
+      function showPinStage() {
+        showStage("pinStage", "pin");
+        if (document.activeElement) document.activeElement.blur();
+        focusPinInput();
+      }
+      function focusPinInput() {
+        if (CURRENT_STAGE === "pin") pinHidden.focus();
+      }
+      // Any click anywhere while on the PIN stage re-focuses the hidden PIN input,
+      // so the person never has to hunt for a text box to type into.
+      document.addEventListener("click", () => {
+        if (CURRENT_STAGE === "pin") focusPinInput();
+      });
+      pinHidden.addEventListener("blur", () => {
+        if (CURRENT_STAGE === "pin") setTimeout(focusPinInput, 10);
+      });
+
+      pinHidden.addEventListener("input", (e) => {
+        pinValue = e.target.value.replace(/\D/g, "").slice(0, 8);
+        e.target.value = pinValue;
+        pinDots.forEach((dot, i) =>
+          dot.classList.toggle("filled", i < pinValue.length),
+        );
+        if (pinValue.length === 8) checkPin();
+      });
+
+      function checkPin() {
+        if (pinValue === PIN) {
+          pinError.style.color = "var(--ok)";
+          pinError.textContent = "ACCESS GRANTED";
+          setTimeout(enterTerminal, 600);
+        } else {
+          pinError.style.color = "var(--danger)";
+          pinError.textContent = "ACCESS DENIED — TRY AGAIN";
+          pinBox.classList.add("shake");
+          setTimeout(() => {
+            pinBox.classList.remove("shake");
+            pinValue = "";
+            pinHidden.value = "";
+            pinDots.forEach((dot) => dot.classList.remove("filled"));
+          }, 400);
+        }
+      }
+
+      /* ============ TERMINAL STAGE ============ */
+      function enterTerminal() {
+        showStage("termStage", "terminal");
+        resizeTermPlasma();
+        document.getElementById("lastLogin").textContent =
+          "Last login: " + new Date().toString().slice(0, 24) + " on tty-heart";
+        printLine(
+          "ACCESS GRANTED. Selamat datang, " + PARTNER_NAME + ".",
+          "gold",
+        );
+        printLine("");
+        document.getElementById("cmdInput").focus();
+      }
+
+      const screen = document.getElementById("screen");
+      const cmdInput = document.getElementById("cmdInput");
+      const PROMPT_TEXT = "/home/hudzaifah(nisa) » ";
+      let inputMode = "command"; // 'command' | 'quiz' | 'sudoPassword'
+
+      const termPlasma = document.getElementById("termPlasma");
+      const termPlasmaCtx = termPlasma.getContext("2d");
+      const plasmaChars = " .:-=+*#%@";
+      const plasmaPalette = [
+        [18, 0, 55],
+        [55, 0, 150],
+        [130, 0, 255],
+        [220, 45, 255],
+        [255, 95, 235],
+        [255, 190, 255],
+      ];
+      const plasmaFontSize = 20;
+      const plasmaCellW = plasmaFontSize * 0.61;
+      const plasmaCellH = plasmaFontSize * 1.02;
+      let plasmaCols = 0;
+      let plasmaRows = 0;
+      let plasmaDpr = 1;
+
+      function resizeTermPlasma() {
+        plasmaDpr = Math.min(devicePixelRatio || 1, 2);
+        termPlasma.width = termPlasma.clientWidth * plasmaDpr;
+        termPlasma.height = termPlasma.clientHeight * plasmaDpr;
+        plasmaCols = Math.ceil(termPlasma.clientWidth / plasmaCellW);
+        plasmaRows = Math.ceil(termPlasma.clientHeight / plasmaCellH);
+        termPlasmaCtx.setTransform(plasmaDpr, 0, 0, plasmaDpr, 0, 0);
+        termPlasmaCtx.font = `${plasmaFontSize}px "Courier New", monospace`;
+        termPlasmaCtx.textBaseline = "top";
+      }
+
+      function termPlasmaValue(x, y, time) {
+        const waves =
+          Math.sin(x * 0.105 + time * 1.15) +
+          Math.sin(y * 0.135 - time * 0.92) +
+          Math.sin((x + y) * 0.075 + time * 0.72);
+        const dx = x - plasmaCols * 0.5;
+        const dy = y - plasmaRows * 0.5;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const ring = Math.sin(distance * 0.145 - time * 1.35);
+        return (waves + ring) / 4;
+      }
+
+      function drawTermPlasma(time) {
+        termPlasmaCtx.fillStyle = "#0a0612";
+        termPlasmaCtx.fillRect(
+          0,
+          0,
+          termPlasma.clientWidth,
+          termPlasma.clientHeight,
+        );
+        for (let y = 0; y < plasmaRows; y++) {
+          for (let x = 0; x < plasmaCols; x++) {
+            let value = termPlasmaValue(x, y, time) * 0.5 + 0.5;
+            value = Math.pow(value, 0.78);
+            const charIndex = Math.min(
+              plasmaChars.length - 1,
+              Math.floor(value * plasmaChars.length),
+            );
+            if (charIndex === 0) continue;
+            const palettePosition = value * (plasmaPalette.length - 1);
+            const paletteIndex = Math.min(
+              plasmaPalette.length - 2,
+              Math.floor(palettePosition),
+            );
+            const blend = palettePosition - paletteIndex;
+            const first = plasmaPalette[paletteIndex];
+            const second = plasmaPalette[paletteIndex + 1];
+            const red = Math.round(first[0] + (second[0] - first[0]) * blend);
+            const green = Math.round(first[1] + (second[1] - first[1]) * blend);
+            const blue = Math.round(first[2] + (second[2] - first[2]) * blend);
+            termPlasmaCtx.fillStyle = `rgba(${red},${green},${blue},${Math.min(1, 0.56 + value * 0.5)})`;
+            termPlasmaCtx.fillText(
+              plasmaChars[charIndex],
+              x * plasmaCellW,
+              y * plasmaCellH,
+            );
+          }
+        }
+        requestAnimationFrame((now) => drawTermPlasma(now / 1000));
+      }
+      drawTermPlasma(0);
+
+      function printLine(text, cls) {
+        const div = document.createElement("div");
+        div.className = "line" + (cls ? " " + cls : "");
+        div.textContent = text;
+        screen.appendChild(div);
+        screen.scrollTop = screen.scrollHeight;
+      }
+      function printHTML(html) {
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        screen.appendChild(div);
+        screen.scrollTop = screen.scrollHeight;
+      }
+
+      function daysTogether() {
+        return Math.floor((new Date() - ANNIV_DATE) / (1000 * 60 * 60 * 24));
+      }
+
+      let annivTimer = null;
+      let annivLine = null;
+
+      function updateAnnivClock() {
+        const elapsed = Math.max(0, new Date() - ANNIV_DATE);
+        const totalSeconds = Math.floor(elapsed / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        if (annivLine) {
+          annivLine.querySelector("[data-anniv-days]").textContent = days;
+          annivLine.querySelector("[data-anniv-hours]").textContent = hours;
+          annivLine.querySelector("[data-anniv-minutes]").textContent = minutes;
+          annivLine.querySelector("[data-anniv-seconds]").textContent = seconds;
+          annivLine.querySelector("[data-anniv-status]").textContent =
+            `Hari ini adalah hari ke-${days} kita bersama.`;
+        }
+      }
+
+      function startAnnivClock() {
+        clearInterval(annivTimer);
+        if (annivLine) annivLine.remove();
+        annivLine = document.createElement("div");
+        annivLine.className = "anniv-card";
+        annivLine.innerHTML = `
+          <div class="anniv-card-header">[ ANNIVERSARY COUNTER ]</div>
+          <div class="anniv-card-status" data-anniv-status></div>
+          <div class="anniv-stats">
+            <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-days></span><span class="anniv-stat-label">DAYS</span></div>
+            <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-hours></span><span class="anniv-stat-label">HOURS</span></div>
+            <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-minutes></span><span class="anniv-stat-label">MINUTES</span></div>
+            <div class="anniv-stat"><span class="anniv-stat-value" data-anniv-seconds></span><span class="anniv-stat-label">SECONDS</span></div>
+          </div>
+        `;
+        screen.appendChild(annivLine);
+        updateAnnivClock();
+        annivTimer = setInterval(updateAnnivClock, 1000);
+        screen.scrollTop = screen.scrollHeight;
+      }
+
+      function runWhoami() {
+        printLine("Starting identity scan...", "dim");
+        printLine("");
+        const tasks = [
+          "Resolving current user",
+          "Scanning emotional permissions",
+          "Loading relationship profile",
+          "Verifying heart access",
+        ];
+        let index = 0;
+
+        function next() {
+          if (index >= tasks.length) {
+            printLine("");
+            printHTML(`
+      <div class="whoami-card">
+        <div class="whoami-card-header">[ IDENTITY PROFILE ]</div>
+        <div class="whoami-row"><span class="whoami-label">USER</span><span class="whoami-value">${PARTNER_NAME}</span></div>
+        <div class="whoami-row"><span class="whoami-label">FULL NAME</span><span class="whoami-value">${PARTNER_FULL_NAME}</span></div>
+        <div class="whoami-row"><span class="whoami-label">ROLE</span><span class="whoami-value">The One</span></div>
+        <div class="whoami-row"><span class="whoami-label">ACCESS LEVEL</span><span class="whoami-value">seluruh hatiku</span></div>
+        <div class="whoami-row"><span class="whoami-label">STATUS</span><span class="whoami-status">paling disayang, paling dicari kalau lagi jauh</span></div>
+        <div class="whoami-row"><span class="whoami-label">SPECIALTY</span><span class="whoami-value">membuat Hudzaifah senyum tanpa alasan</span></div>
+        <div class="whoami-row"><span class="whoami-label">THREAT LEVEL</span><span class="whoami-status">terlalu menggemaskan</span></div>
+        <div class="whoami-row"><span class="whoami-label">SYSTEM NOTE</span><span class="whoami-note">access permanent, cannot be revoked</span></div>
       </div>
     `);
-  },
-  photos: () => {
-    let html = '<div class="section-title">FOTO KITA</div><div class="photo-grid">';
-    for(let i=1; i<=PHOTO_COUNT; i++){
-      html += `
+            printLine("");
+            return;
+          }
+
+          runProgressTask(tasks[index], 1, () => {
+            index++;
+            setTimeout(next, 120);
+          });
+        }
+
+        next();
+      }
+
+      const letterPages = [
+        `
+          <div class="section-title">THE FIRST OF ALL THINGS</div>
+          <div class="letter">
+            <p>Dear Nisa,</p>
+            <p>Aku nggak pernah pintar merangkai kata, tapi malam ini aku coba, karena kamu pantas dapat lebih dari sekadar ucapan singkat.</p>
+            <p>Empat bulan bukan waktu yang panjang kalau dibandingkan dengan rencana-rencana yang aku susun diam-diam soal kita ke depannya.</p>
+          </div>
+        `,
+        `
+          <div class="section-title">THE MEMORY</div>
+          <div class="letter">
+            <p>Buatku, empat bulan ini cukup untuk aku sadar satu hal: aku suka caramu [isi kenangan spesifik di sini].</p>
+            <p>Aku masih ingat [ceritakan momen pertama kalian bertemu atau jadian di sini]. Sejak itu, hari-hariku jadi punya alasan buat ditunggu.</p>
+          </div>
+        `,
+        `
+          <div class="section-title">THE PROMISE</div>
+          <div class="letter">
+            <p>Terima kasih sudah sabar sama aku, sudah mau dengerin cerita-cerita nggak penting, dan sudah tetap ada meskipun kadang aku nggak sempurna.</p>
+            <p>Selamat empat bulan, Nisa. Ini baru permulaan.</p>
+            <p style="text-align:right;">— Hudzaifah</p>
+          </div>
+        `,
+      ];
+      let letterPager = null;
+      let letterPageIndex = 0;
+
+      function renderLetterPage() {
+        if (!letterPager) return;
+        letterPager.innerHTML = `
+          <div class="letter-pager-header">[ NISA LETTER DOCUMENTATION ]</div>
+          <div class="letter-page">${letterPages[letterPageIndex]}</div>
+          <div class="letter-pager-footer">
+            <strong>PAGE ${letterPageIndex + 1}/${letterPages.length}</strong>
+            &nbsp;&nbsp; LEFT: previous &nbsp;&nbsp; RIGHT: next &nbsp;&nbsp; ESC: exit
+          </div>
+        `;
+        screen.scrollTop = screen.scrollHeight;
+      }
+
+      function openLetterPager() {
+        inputMode = "letter";
+        letterPageIndex = 0;
+        letterPager = document.createElement("div");
+        letterPager.className = "letter-pager";
+        screen.appendChild(letterPager);
+        renderLetterPage();
+        cmdInput.focus();
+      }
+
+      function closeLetterPager() {
+        inputMode = "command";
+        if (letterPager) {
+          letterPager.remove();
+          letterPager = null;
+        }
+        printLine("[letter closed]", "dim");
+        cmdInput.focus();
+      }
+
+      const commands = {
+        help: () => {
+          printLine("DAFTAR PERINTAH:", "gold");
+          printLine("  whoami     - siapa kamu di sistem ini");
+          printLine("  letter     - baca surat untuk " + PARTNER_NAME);
+          printLine("  photos     - buka galeri foto kami");
+          printLine("  video      - putar video kenangan");
+          printLine("  anniv      - sudah berapa lama kita bersama");
+          printLine("  quiz       - main tebak-tebakan tentang kita");
+          printLine("  hack       - ehm... coba aja sendiri");
+          printLine("  scan       - scan sistem, cari 'ancaman'");
+          printLine("  matrix     - ???");
+          printLine("  decrypt    - buka pesan rahasia yang terenkripsi");
+          printLine("  ping       - cek koneksi ke hati Nisa");
+          printLine("  clear      - bersihkan layar");
+          printLine("");
+        },
+        whoami: () => runWhoami(),
+        anniv: () => {
+          startAnnivClock();
+          printLine("Semoga masih banyak hari ke depan yang bisa dihitung. :)");
+          printLine("");
+        },
+        letter: () => openLetterPager(),
+        photos: () => {
+          let html =
+            '<div class="section-title">FOTO KITA</div><div class="photo-grid">';
+          for (let i = 1; i <= PHOTO_COUNT; i++) {
+            html += `
         <div class="photo-thumb" data-index="${i}">
           <img src="assets/foto-${i}.jpg" alt="foto ${i}" loading="lazy"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <div class="photo-fallback">foto-${i}.jpg<br>belum ada</div>
           <span class="idx">${i}</span>
         </div>`;
-    }
-    html += '</div>';
-    printHTML(html);
-    document.querySelectorAll('.photo-thumb').forEach(thumb => {
-      thumb.addEventListener('click', () => openPhotoModal(thumb.dataset.index));
-    });
-  },
-  video: () => {
-    printHTML(`
+          }
+          html += "</div>";
+          printHTML(html);
+          document.querySelectorAll(".photo-thumb").forEach((thumb) => {
+            thumb.addEventListener("click", () =>
+              openPhotoModal(thumb.dataset.index),
+            );
+          });
+        },
+        video: () => {
+          printHTML(`
       <div class="section-title">VIDEO KENANGAN</div>
       <div class="video-wrap">
         <video controls>
           <source src="assets/video-1.mp4" type="video/mp4">
           Browser kamu tidak mendukung pemutaran video.
         </video>
-        <p class="dim" style="font-size:13px; margin-top:6px;">assets/video-1.mp4 — pastikan file sudah ada di folder assets.</p>
+        <p class="dim" style="font-size:17px; margin-top:6px;">assets/video-1.mp4 — pastikan file sudah ada di folder assets.</p>
       </div>
     `);
-  },
-  clear: () => { screen.innerHTML = ""; },
-  quiz: () => startQuiz(),
-  hack: () => runHack(),
-  scan: () => runScan(),
-  matrix: () => runMatrix(),
-  decrypt: () => runDecrypt(),
-  ping: () => runPing(),
-  sudo: () => startSudo()
-};
+        },
+        clear: () => {
+          clearInterval(annivTimer);
+          annivTimer = null;
+          annivLine = null;
+          screen.innerHTML = "";
+        },
+        quiz: () => startQuiz(),
+        hack: () => runHack(),
+        scan: () => runScan(),
+        matrix: () => runMatrix(),
+        decrypt: () => runDecrypt(),
+        ping: () => runPing(),
+        sudo: () => startSudo(),
+      };
 
-/* ============ QUIZ ============ */
-const quizQuestions = [
-  {
-    q: "Tanggal berapa kita resmi jadian?",
-    type: "single",
-    options: ["10 Mei 2026", "12 Mei 2026", "5 Mei 2026", "20 April 2026"],
-    correct: [0]
-  },
-  {
-    q: "Di mana lokasi first date kita?",
-    type: "single",
-    options: ["Nuart Sculpture Park", "Dago Dream Park", "Floating Market Lembang", "The Great Asia Africa"],
-    correct: [0]
-  },
-  {
-    q: "Panggilan sayang apa yang aku kasih ke kamu?",
-    type: "single",
-    options: ["Sayang", "Baby", "Cinta", "Dek"],
-    correct: [0]
-  },
-  {
-    q: "Pilih TEPAT 3 warna favorit kamu:",
-    type: "multi",
-    pick: 3,
-    options: ["Putih", "Krem", "Biru", "Hitam", "Merah", "Hijau"],
-    correct: [0, 1, 2]
-  },
-  {
-    q: "Pilih TEPAT 2 makanan favorit kamu:",
-    type: "multi",
-    pick: 2,
-    options: ["Stroberi", "Dubai Chewy", "Coklat", "Keju"],
-    correct: [0, 1]
-  },
-  {
-    q: "Film apa yang pernah kita tonton bareng?",
-    type: "single",
-    options: ["The Odyssey", "Oppenheimer", "Interstellar", "Tenet"],
-    correct: [0]
-  }
-];
+      /* ============ QUIZ ============ */
+      const quizQuestions = [
+        {
+          q: "Tanggal berapa kita resmi jadian?",
+          type: "single",
+          options: [
+            "10 Mei 2026",
+            "12 Mei 2026",
+            "5 Mei 2026",
+            "20 April 2026",
+          ],
+          correct: [0],
+        },
+        {
+          q: "Di mana lokasi first date kita?",
+          type: "single",
+          options: [
+            "Nuart Sculpture Park",
+            "Dago Dream Park",
+            "Floating Market Lembang",
+            "The Great Asia Africa",
+          ],
+          correct: [0],
+        },
+        {
+          q: "Panggilan sayang apa yang aku kasih ke kamu?",
+          type: "single",
+          options: ["Sayang", "Baby", "Cinta", "Dek"],
+          correct: [0],
+        },
+        {
+          q: "Pilih TEPAT 3 warna favorit kamu:",
+          type: "multi",
+          pick: 3,
+          options: ["Putih", "Krem", "Biru", "Hitam", "Merah", "Hijau"],
+          correct: [0, 1, 2],
+        },
+        {
+          q: "Pilih TEPAT 2 makanan favorit kamu:",
+          type: "multi",
+          pick: 2,
+          options: ["Stroberi", "Dubai Chewy", "Coklat", "Keju"],
+          correct: [0, 1],
+        },
+        {
+          q: "Film apa yang pernah kita tonton bareng?",
+          type: "single",
+          options: ["The Odyssey", "Oppenheimer", "Interstellar", "Tenet"],
+          correct: [0],
+        },
+      ];
 
-let quizState = { index: 0, correctCount: 0, questions: [] };
+      let quizState = { index: 0, correctCount: 0, questions: [] };
 
-function shuffleArray(arr){
-  const a = arr.slice();
-  for(let i = a.length - 1; i > 0; i--){
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
+      function shuffleArray(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
 
-function shuffleQuizQuestions(){
-  return quizQuestions.map(q => {
-    const orderMap = shuffleArray(q.options.map((_, i) => i));
-    const newOptions = orderMap.map(i => q.options[i]);
-    const newCorrect = q.correct.map(oldIdx => orderMap.indexOf(oldIdx));
-    return { ...q, options: newOptions, correct: newCorrect };
-  });
-}
+      function shuffleQuizQuestions() {
+        return quizQuestions.map((q) => {
+          const orderMap = shuffleArray(q.options.map((_, i) => i));
+          const newOptions = orderMap.map((i) => q.options[i]);
+          const newCorrect = q.correct.map((oldIdx) =>
+            orderMap.indexOf(oldIdx),
+          );
+          return { ...q, options: newOptions, correct: newCorrect };
+        });
+      }
 
-function startQuiz(){
-  inputMode = 'quiz';
-  quizState = { index: 0, correctCount: 0, questions: shuffleQuizQuestions() };
-  printLine("QUIZ DIMULAI! Jawab semua biar dapet hadiah spesial.", "gold");
-  printLine("");
-  askQuizQuestion();
-}
+      function startQuiz() {
+        inputMode = "quiz";
+        quizState = {
+          index: 0,
+          correctCount: 0,
+          questions: shuffleQuizQuestions(),
+        };
+        printLine(
+          "QUIZ DIMULAI! Jawab semua biar dapet hadiah spesial.",
+          "gold",
+        );
+        printLine("");
+        askQuizQuestion();
+      }
 
-function askQuizQuestion(){
-  const q = quizState.questions[quizState.index];
-  printLine(`Soal ${quizState.index + 1}/${quizState.questions.length}: ${q.q}`, "pink");
-  q.options.forEach((opt, i) => {
-    printLine(`  ${String.fromCharCode(65 + i)}) ${opt}`);
-  });
-  if(q.type === 'single'){
-    printLine("Ketik satu huruf jawaban (contoh: A)", "dim");
-  } else {
-    printLine(`Ketik ${q.pick} huruf dipisah koma (contoh: A,B,C)`, "dim");
-  }
-  printLine("");
-}
+      function askQuizQuestion() {
+        const q = quizState.questions[quizState.index];
+        const instruction =
+          q.type === "single"
+            ? "Ketik satu huruf jawaban, contoh: A"
+            : `Ketik ${q.pick} huruf dipisah koma, contoh: A,B,C`;
+        const options = q.options
+          .map(
+            (opt, i) =>
+              `<div class="quiz-option">${String.fromCharCode(65 + i)}) ${opt}</div>`,
+          )
+          .join("");
+        printHTML(`
+      <div class="quiz-card">
+        <div class="quiz-card-header">[ QUESTION ${quizState.index + 1}/${quizState.questions.length} ]</div>
+        <div class="quiz-question">${q.q}</div>
+        <div class="quiz-options">${options}</div>
+        <div class="quiz-instruction">${instruction}</div>
+      </div>
+    `);
+      }
 
-function handleQuizAnswer(raw){
-  const q = quizState.questions[quizState.index];
-  const letters = raw.toUpperCase().split(',').map(s => s.trim()).filter(Boolean);
-  const indices = letters.map(l => l.charCodeAt(0) - 65);
-  let isValid = true;
-  if(q.type === 'single' && indices.length !== 1) isValid = false;
-  if(q.type === 'multi' && indices.length !== q.pick) isValid = false;
-  indices.forEach(i => { if(i < 0 || i >= q.options.length) isValid = false; });
+      function handleQuizAnswer(raw) {
+        const q = quizState.questions[quizState.index];
+        const letters = raw
+          .toUpperCase()
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const indices = letters.map((l) => l.charCodeAt(0) - 65);
+        let isValid = true;
+        if (q.type === "single" && indices.length !== 1) isValid = false;
+        if (q.type === "multi" && indices.length !== q.pick) isValid = false;
+        indices.forEach((i) => {
+          if (i < 0 || i >= q.options.length) isValid = false;
+        });
 
-  if(!isValid){
-    printLine("Format jawaban belum pas, coba lagi ya.", "danger");
-    printLine("");
-    askQuizQuestion();
-    return;
-  }
+        if (!isValid) {
+          printLine("Format jawaban belum pas, coba lagi ya.", "danger");
+          printLine("");
+          askQuizQuestion();
+          return;
+        }
 
-  const sortedAns = [...indices].sort();
-  const sortedCorrect = [...q.correct].sort();
-  const isCorrect = sortedAns.length === sortedCorrect.length && sortedAns.every((v, i) => v === sortedCorrect[i]);
+        const sortedAns = [...indices].sort();
+        const sortedCorrect = [...q.correct].sort();
+        const isCorrect =
+          sortedAns.length === sortedCorrect.length &&
+          sortedAns.every((v, i) => v === sortedCorrect[i]);
 
-  if(isCorrect){
-    printLine("Benar!", "ok");
-    quizState.correctCount++;
-  } else {
-    printLine("Kurang tepat, tapi lanjut aja dulu.", "danger");
-  }
-  printLine("");
+        if (isCorrect) {
+          printLine("Benar!", "ok");
+          quizState.correctCount++;
+        } else {
+          printLine("Kurang tepat, tapi lanjut aja dulu.", "danger");
+        }
+        printLine("");
 
-  quizState.index++;
-  if(quizState.index < quizState.questions.length){
-    askQuizQuestion();
-  } else {
-    finishQuiz();
-  }
-}
+        quizState.index++;
+        if (quizState.index < quizState.questions.length) {
+          askQuizQuestion();
+        } else {
+          finishQuiz();
+        }
+      }
 
-function finishQuiz(){
-  inputMode = 'command';
-  printLine(`Skor kamu: ${quizState.correctCount}/${quizState.questions.length}`, "gold");
-  printLine("");
-  if(quizState.correctCount === quizState.questions.length){
-    runQuizResultProgress(showQuizReward);
-  } else {
-    printLine("Belum sempurna nih, coba lagi kapan-kapan ya! Ketik 'quiz' buat ulang.", "dim");
-    printLine("");
-  }
-}
+      function finishQuiz() {
+        inputMode = "command";
+        printLine(
+          `Skor kamu: ${quizState.correctCount}/${quizState.questions.length}`,
+          "gold",
+        );
+        printLine("");
+        if (quizState.correctCount === quizState.questions.length) {
+          runQuizResultProgress(showQuizReward);
+        } else {
+          printLine(
+            "Belum sempurna nih, coba lagi kapan-kapan ya! Ketik 'quiz' buat ulang.",
+            "dim",
+          );
+          printLine("");
+        }
+      }
 
-function runQuizResultProgress(callback){
-  printLine("Calculating results...", "dim");
-  const barDiv = document.createElement('div');
-  barDiv.className = 'line gold';
-  screen.appendChild(barDiv);
-  let pct = 0;
-  function tick(){
-    const filled = Math.floor(pct / 5);
-    barDiv.textContent = "[" + "#".repeat(filled) + "-".repeat(20 - filled) + "] " + pct + "%";
-    screen.scrollTop = screen.scrollHeight;
-    if(pct < 100){
-      pct += 5;
-      setTimeout(tick, 80);
-    } else {
-      printLine("");
-      callback();
-    }
-  }
-  tick();
-}
+      function runQuizResultProgress(callback) {
+        printLine("Calculating results...", "dim");
+        const barDiv = document.createElement("div");
+        barDiv.className = "line gold";
+        screen.appendChild(barDiv);
+        let pct = 0;
+        function tick() {
+          const filled = Math.floor(pct / 5);
+          barDiv.textContent =
+            "[" +
+            "#".repeat(filled) +
+            "-".repeat(20 - filled) +
+            "] " +
+            pct +
+            "%";
+          screen.scrollTop = screen.scrollHeight;
+          if (pct < 100) {
+            pct += 5;
+            setTimeout(tick, 80);
+          } else {
+            printLine("");
+            callback();
+          }
+        }
+        tick();
+      }
 
-function showQuizReward(){
-  printHTML(`
+      function showQuizReward() {
+        printHTML(`
+      <div class="quiz-reward">
       <div class="section-title">YOU PASSED THE QUIZ</div>
       <div class="letter">
         <p>okay wait, you actually got everything right?? i'm a little scared now, are you secretly reading my diary or something lol.</p>
@@ -790,355 +1929,401 @@ function showQuizReward(){
         <p>so yeah. quiz champion, memory keeper, my favorite person, all in one. happy 4 months, sayang. i'm not going anywhere.</p>
         <p style="text-align:right;">— hudz</p>
       </div>
+      </div>
     `);
-}
-
-/* ============ HACK ============ */
-function runProgressTask(label, attempts, onComplete){
-  const div = document.createElement('div');
-  div.className = 'line';
-  screen.appendChild(div);
-  let attempt = 1;
-  let step = 0;
-  const stepsPerAttempt = 10;
-
-  function tick(){
-    const dots = '.'.repeat((step % 4));
-    div.innerHTML = `${label}${dots}`;
-    screen.scrollTop = screen.scrollHeight;
-    step++;
-    if(step < stepsPerAttempt){
-      setTimeout(tick, 90);
-    } else if(attempt < attempts){
-      div.innerHTML = `${label}... <span class="danger">failed</span>`;
-      screen.scrollTop = screen.scrollHeight;
-      attempt++;
-      step = 0;
-      setTimeout(() => {
-        printLine("Retrying...", "dim");
-        setTimeout(tick, 200);
-      }, 350);
-    } else {
-      div.innerHTML = `${label}... <span class="ok">done</span>`;
-      screen.scrollTop = screen.scrollHeight;
-      onComplete();
-    }
-  }
-  tick();
-}
-
-function runHack(){
-  printLine("Connecting to NISSA'S HEART v4.0...", "dim");
-  printLine("");
-  const tasks = [
-    { label: "Establishing secure connection", attempts: 1 },
-    { label: "Locating access point", attempts: 1 },
-    { label: "Bypassing trust firewall", attempts: 2 },
-    { label: "Cracking overthinking encryption", attempts: 1 },
-    { label: "Decrypting doubts.dat", attempts: 2 },
-    { label: "Scanning for jealousy.dll", attempts: 1 },
-    { label: "Neutralizing insecurity subroutine", attempts: 1 },
-    { label: "Patching self-doubt.sys", attempts: 2 },
-    { label: "Uploading affection payload", attempts: 1 },
-    { label: "Compiling permanent_access.exe", attempts: 2 },
-    { label: "Installing permanent_access.exe", attempts: 1 },
-    { label: "Rebooting heart.sys", attempts: 1 }
-  ];
-  let i = 0;
-  function next(){
-    if(i >= tasks.length){
-      printLine("");
-      printLine("ACCESS: 100% — ALREADY YOURS.", "gold");
-      printLine("");
-      return;
-    }
-    runProgressTask(tasks[i].label, tasks[i].attempts, () => {
-      i++;
-      setTimeout(next, 150);
-    });
-  }
-  next();
-}
-
-/* ============ SCAN ============ */
-function runScanTask(task, onComplete){
-  const div = document.createElement('div');
-  div.className = 'line';
-  screen.appendChild(div);
-  let step = 0;
-  const maxSteps = 9;
-  function tick(){
-    const dots = '.'.repeat((step % 4));
-    div.innerHTML = `Scanning ${task.file}${dots}`;
-    screen.scrollTop = screen.scrollHeight;
-    step++;
-    if(step < maxSteps){
-      setTimeout(tick, 85);
-    } else {
-      let resultHTML;
-      if(task.result === 'clean'){
-        resultHTML = `Scanning ${task.file}... <span class="ok">clean</span>`;
-      } else if(task.result === 'threat'){
-        resultHTML = `Scanning ${task.file}... <span class="danger">threat found — ${task.status}</span>`;
-      } else {
-        resultHTML = `Scanning ${task.file}... <span class="pink">${task.status}</span>`;
       }
-      div.innerHTML = resultHTML;
-      screen.scrollTop = screen.scrollHeight;
-      onComplete();
-    }
-  }
-  tick();
-}
 
-function runScan(){
-  printLine("Initializing full system scan...", "dim");
-  printLine("");
-  const tasks = [
-    { file: "boot sector", result: "clean" },
-    { file: "memory (heart.sys)", result: "clean" },
-    { file: "overthinking.exe", result: "threat", status: "quarantined" },
-    { file: "insecurity.exe", result: "threat", status: "quarantined" },
-    { file: "doubt.exe", result: "threat", status: "quarantined" },
-    { file: "jealousy.tmp", result: "threat", status: "deleted" },
-    { file: "old_flame.bak", result: "threat", status: "permanently deleted" },
-    { file: "missing_you.exe", result: "unremovable", status: "cannot be removed — running as background process" },
-    { file: "love.exe", result: "unremovable", status: "cannot be removed — permanent, admin-level, unremovable" }
-  ];
-  let i = 0;
-  function next(){
-    if(i >= tasks.length){
-      printLine("");
-      printLine("Scan complete. 5 threats handled, 2 files are just... you, permanently.", "gold");
-      printLine("");
-      return;
-    }
-    runScanTask(tasks[i], () => {
-      i++;
-      setTimeout(next, 150);
-    });
-  }
-  next();
-}
+      /* ============ HACK ============ */
+      function runProgressTask(label, attempts, onComplete) {
+        const div = document.createElement("div");
+        div.className = "line";
+        screen.appendChild(div);
+        let attempt = 1;
+        let step = 0;
+        const stepsPerAttempt = 10;
 
-/* ============ PING ============ */
-function runPing(){
-  printLine("Pinging Nissa [heart::love] with 32 bytes of affection:", "dim");
-  const totalReplies = 14;
-  const times = [];
-  let i = 0;
-  function next(){
-    if(i >= totalReplies){
-      const min = Math.min(...times);
-      const max = Math.max(...times);
-      const avg = (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1);
-      printLine("");
-      printLine(`Ping statistics for Nissa: Packets: Sent = ${totalReplies}, Received = ${totalReplies}, Lost = 0 (0% loss)`, "gold");
-      printLine(`Approximate round trip times: Minimum = ${min}ms, Maximum = ${max}ms, Average = ${avg}ms`, "gold");
-      printLine("Connection status: permanently attached, timeout not found in dictionary.", "gold");
-      printLine("");
-      return;
-    }
-    const time = Math.floor(Math.random() * 4);
-    const ttl = 118 + Math.floor(Math.random() * 10);
-    times.push(time);
-    printLine(`Reply from Nissa: bytes=32 time=${time}ms TTL=${ttl}`, "violet");
-    i++;
-    setTimeout(next, 150);
-  }
-  next();
-}
-
-/* ============ MATRIX ============ */
-function runMatrix(){
-  const canvas = document.createElement('canvas');
-  canvas.id = 'matrixCanvas';
-  canvas.style.position = 'fixed';
-  canvas.style.inset = '0';
-  canvas.style.zIndex = '45';
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  document.body.appendChild(canvas);
-
-  const msgOverlay = document.createElement('div');
-  msgOverlay.id = 'matrixMessage';
-  Object.assign(msgOverlay.style, {
-    position: 'fixed', inset: '0', zIndex: '46',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    textAlign: 'center', padding: '0 24px',
-    fontFamily: "'VT323',monospace", fontSize: '38px',
-    color: '#7cffb2', textShadow: '0 0 14px rgba(124,255,178,.85)',
-    opacity: '0', transition: 'opacity .6s ease', pointerEvents: 'none'
-  });
-  document.body.appendChild(msgOverlay);
-
-  const ctx = canvas.getContext('2d');
-  const chars = "NISSA♥SAYANG01".split("");
-  const fontSize = 16;
-  const columns = Math.floor(canvas.width / fontSize);
-  const drops = Array(columns).fill(1);
-
-  function draw(){
-    ctx.fillStyle = 'rgba(10,6,18,0.08)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#7cffb2';
-    ctx.font = fontSize + 'px monospace';
-    for(let i = 0; i < drops.length; i++){
-      const text = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-      if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
-    }
-  }
-  const interval = setInterval(draw, 40);
-
-  function showMessage(text, holdMs){
-    return new Promise(resolve => {
-      msgOverlay.textContent = text;
-      msgOverlay.style.opacity = '1';
-      setTimeout(() => {
-        msgOverlay.style.opacity = '0';
-        setTimeout(resolve, 600);
-      }, holdMs);
-    });
-  }
-
-  (async () => {
-    await new Promise(r => setTimeout(r, 1200));
-    await showMessage('SCANNING THE UNIVERSE...', 1300);
-    await showMessage('SEARCHING FOR THE ONE...', 1300);
-    await showMessage('COMPARING 8 BILLION CANDIDATES...', 1300);
-    await showMessage('MATCH FOUND: NISSA (100%)', 1600);
-    await new Promise(r => setTimeout(r, 700));
-
-    clearInterval(interval);
-    canvas.remove();
-    msgOverlay.remove();
-    printLine("Wake up, Nissa...", "ok");
-    printLine("The system has one truth: it's always been you.", "gold");
-    printLine("");
-  })();
-}
-
-/* ============ DECRYPT ============ */
-function runDecrypt(){
-  const message = "I fall for you a little more every single day, and I'm not even mad about it.";
-  const scrambleChars = "!<>-_\\/[]{}=+*^?#~";
-
-  const preLines = [
-    "Initializing decryption module...",
-    "Located: encrypted_message.dat (1 file, 82 bytes)",
-    "Searching for decryption key...",
-    "Key found: <3",
-    "Beginning decryption sequence..."
-  ];
-
-  let i = 0;
-  function preTick(){
-    if(i >= preLines.length){
-      setTimeout(startBox, 300);
-      return;
-    }
-    printLine(preLines[i], i === preLines.length - 1 ? "gold" : "dim");
-    i++;
-    setTimeout(preTick, 380);
-  }
-
-  function startBox(){
-    const border = "+" + "-".repeat(message.length + 2) + "+";
-    const topDiv = document.createElement('div');
-    topDiv.className = 'line dim';
-    topDiv.textContent = border;
-    screen.appendChild(topDiv);
-
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'line violet';
-    screen.appendChild(msgDiv);
-
-    const bottomDiv = document.createElement('div');
-    bottomDiv.className = 'line dim';
-    bottomDiv.textContent = border;
-    screen.appendChild(bottomDiv);
-
-    const totalFrames = 40;
-    let frame = 0;
-
-    function randomChar(){
-      return scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
-    }
-
-    function tick(){
-      const progress = frame / totalFrames;
-      const revealCount = Math.floor(progress * message.length);
-      let out = "";
-      for(let c = 0; c < message.length; c++){
-        if(c < revealCount || message[c] === ' ') out += message[c];
-        else out += randomChar();
+        function tick() {
+          const dots = ".".repeat(step % 4);
+          div.innerHTML = `${label}${dots}`;
+          screen.scrollTop = screen.scrollHeight;
+          step++;
+          if (step < stepsPerAttempt) {
+            setTimeout(tick, 90);
+          } else if (attempt < attempts) {
+            div.innerHTML = `${label}... <span class="danger">failed</span>`;
+            screen.scrollTop = screen.scrollHeight;
+            attempt++;
+            step = 0;
+            setTimeout(() => {
+              printLine("Retrying...", "dim");
+              setTimeout(tick, 200);
+            }, 350);
+          } else {
+            div.innerHTML = `${label}... <span class="ok">done</span>`;
+            screen.scrollTop = screen.scrollHeight;
+            onComplete();
+          }
+        }
+        tick();
       }
-      let colorClass = "violet";
-      if(progress > 0.66) colorClass = "gold";
-      else if(progress > 0.33) colorClass = "pink";
-      msgDiv.className = "line " + colorClass;
-      msgDiv.textContent = "| " + out + " |";
-      screen.scrollTop = screen.scrollHeight;
 
-      frame++;
-      if(frame <= totalFrames){
-        setTimeout(tick, 80);
-      } else {
-        msgDiv.className = "line gold";
-        msgDiv.textContent = "| " + message + " |";
+      function runHack() {
+        printLine("Connecting to NISA'S HEART v4.0...", "dim");
         printLine("");
-        printLine("Checksum verified. Decryption complete.", "ok");
-        printLine("");
+        const tasks = [
+          { label: "Establishing secure connection", attempts: 1 },
+          { label: "Locating access point", attempts: 1 },
+          { label: "Bypassing trust firewall", attempts: 2 },
+          { label: "Cracking overthinking encryption", attempts: 1 },
+          { label: "Decrypting doubts.dat", attempts: 2 },
+          { label: "Scanning for jealousy.dll", attempts: 1 },
+          { label: "Neutralizing insecurity subroutine", attempts: 1 },
+          { label: "Patching self-doubt.sys", attempts: 2 },
+          { label: "Uploading affection payload", attempts: 1 },
+          { label: "Compiling permanent_access.exe", attempts: 2 },
+          { label: "Installing permanent_access.exe", attempts: 1 },
+          { label: "Rebooting heart.sys", attempts: 1 },
+        ];
+        let i = 0;
+        function next() {
+          if (i >= tasks.length) {
+            printLine("");
+            printLine("ACCESS: 100% — ALREADY YOURS.", "gold");
+            printLine("");
+            return;
+          }
+          runProgressTask(tasks[i].label, tasks[i].attempts, () => {
+            i++;
+            setTimeout(next, 150);
+          });
+        }
+        next();
       }
-    }
-    tick();
-  }
 
-  preTick();
-}
+      /* ============ SCAN ============ */
+      function runScanTask(task, onComplete) {
+        const div = document.createElement("div");
+        div.className = "line";
+        screen.appendChild(div);
+        let step = 0;
+        const maxSteps = 9;
+        function tick() {
+          const dots = ".".repeat(step % 4);
+          div.innerHTML = `Scanning ${task.file}${dots}`;
+          screen.scrollTop = screen.scrollHeight;
+          step++;
+          if (step < maxSteps) {
+            setTimeout(tick, 85);
+          } else {
+            let resultHTML;
+            if (task.result === "clean") {
+              resultHTML = `Scanning ${task.file}... <span class="ok">clean</span>`;
+            } else if (task.result === "threat") {
+              resultHTML = `Scanning ${task.file}... <span class="danger">threat found — ${task.status}</span>`;
+            } else {
+              resultHTML = `Scanning ${task.file}... <span class="pink">${task.status}</span>`;
+            }
+            div.innerHTML = resultHTML;
+            screen.scrollTop = screen.scrollHeight;
+            onComplete();
+          }
+        }
+        tick();
+      }
 
-/* ============ SECRET (sudo) ============ */
-function startSudo(){
-  inputMode = 'sudoPassword';
-  printLine("[sudo] password for hudzaifah: ", "dim");
-  cmdInput.style.color = 'transparent';
-  cmdInput.style.caretColor = 'transparent';
-}
+      function runScan() {
+        printLine("Initializing full system scan...", "dim");
+        printLine("");
+        const tasks = [
+          { file: "boot sector", result: "clean" },
+          { file: "memory (heart.sys)", result: "clean" },
+          { file: "overthinking.exe", result: "threat", status: "quarantined" },
+          { file: "insecurity.exe", result: "threat", status: "quarantined" },
+          { file: "doubt.exe", result: "threat", status: "quarantined" },
+          { file: "jealousy.tmp", result: "threat", status: "deleted" },
+          {
+            file: "old_flame.bak",
+            result: "threat",
+            status: "permanently deleted",
+          },
+          {
+            file: "missing_you.exe",
+            result: "unremovable",
+            status: "cannot be removed — running as background process",
+          },
+          {
+            file: "love.exe",
+            result: "unremovable",
+            status: "cannot be removed — permanent, admin-level, unremovable",
+          },
+        ];
+        let i = 0;
+        function next() {
+          if (i >= tasks.length) {
+            printLine("");
+            printLine(
+              "Scan complete. 5 threats handled, 2 files are just... you, permanently.",
+              "gold",
+            );
+            printLine("");
+            return;
+          }
+          runScanTask(tasks[i], () => {
+            i++;
+            setTimeout(next, 150);
+          });
+        }
+        next();
+      }
 
-function handleSudoPassword(raw){
-  inputMode = 'command';
-  cmdInput.style.color = '';
-  cmdInput.style.caretColor = '';
-  if(raw === '110203'){
-    runSudoSuccess();
-  } else {
-    printLine("Sorry, try again.", "danger");
-    printLine("");
-  }
-}
+      /* ============ PING ============ */
+      function runPing() {
+        printLine(
+          "Pinging Nisa [heart::love] with 32 bytes of affection:",
+          "dim",
+        );
+        const totalReplies = 14;
+        const times = [];
+        let i = 0;
+        function next() {
+          if (i >= totalReplies) {
+            const min = Math.min(...times);
+            const max = Math.max(...times);
+            const avg = (
+              times.reduce((a, b) => a + b, 0) / times.length
+            ).toFixed(1);
+            printLine("");
+            printLine(
+              `Ping statistics for Nisa: Packets: Sent = ${totalReplies}, Received = ${totalReplies}, Lost = 0 (0% loss)`,
+              "gold",
+            );
+            printLine(
+              `Approximate round trip times: Minimum = ${min}ms, Maximum = ${max}ms, Average = ${avg}ms`,
+              "gold",
+            );
+            printLine(
+              "Connection status: permanently attached, timeout not found in dictionary.",
+              "gold",
+            );
+            printLine("");
+            return;
+          }
+          const time = Math.floor(Math.random() * 4);
+          const ttl = 118 + Math.floor(Math.random() * 10);
+          times.push(time);
+          printLine(
+            `Reply from Nisa: bytes=32 time=${time}ms TTL=${ttl}`,
+            "violet",
+          );
+          i++;
+          setTimeout(next, 150);
+        }
+        next();
+      }
 
-function runSudoSuccess(){
-  const lines = [
-    "Authenticating...",
-    "Access level: root",
-    "Unlocking hidden partition /home/hudzaifah/.secret",
-    "Decompressing achievement.pkg..."
-  ];
-  let i = 0;
-  function next(){
-    if(i >= lines.length){
-      setTimeout(showTrophy, 300);
-      return;
-    }
-    printLine(lines[i], i === lines.length - 1 ? "gold" : "dim");
-    i++;
-    setTimeout(next, 380);
-  }
-  function showTrophy(){
-    printHTML(`
-      <pre style="color:var(--gold); font-family:'Share Tech Mono',monospace; font-size:14px; line-height:1.25; margin:10px 0;">
+      /* ============ MATRIX ============ */
+      function runMatrix() {
+        const canvas = document.createElement("canvas");
+        canvas.id = "matrixCanvas";
+        canvas.style.position = "fixed";
+        canvas.style.inset = "0";
+        canvas.style.zIndex = "45";
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        document.body.appendChild(canvas);
+
+        const msgOverlay = document.createElement("div");
+        msgOverlay.id = "matrixMessage";
+        Object.assign(msgOverlay.style, {
+          position: "fixed",
+          inset: "0",
+          zIndex: "46",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          padding: "0 24px",
+          fontFamily: "'VT323',monospace",
+          fontSize: "38px",
+          color: "#7cffb2",
+          textShadow: "0 0 14px rgba(124,255,178,.85)",
+          opacity: "0",
+          transition: "opacity .6s ease",
+          pointerEvents: "none",
+        });
+        document.body.appendChild(msgOverlay);
+
+        const ctx = canvas.getContext("2d");
+        const chars = "NISA♥SAYANG01".split("");
+        const fontSize = 20;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+
+        function draw() {
+          ctx.fillStyle = "rgba(10,6,18,0.08)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#7cffb2";
+          ctx.font = fontSize + "px monospace";
+          for (let i = 0; i < drops.length; i++) {
+            const text = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975)
+              drops[i] = 0;
+            drops[i]++;
+          }
+        }
+        const interval = setInterval(draw, 40);
+
+        function showMessage(text, holdMs) {
+          return new Promise((resolve) => {
+            msgOverlay.textContent = text;
+            msgOverlay.style.opacity = "1";
+            setTimeout(() => {
+              msgOverlay.style.opacity = "0";
+              setTimeout(resolve, 600);
+            }, holdMs);
+          });
+        }
+
+        (async () => {
+          await new Promise((r) => setTimeout(r, 1200));
+          await showMessage("SCANNING THE UNIVERSE...", 1300);
+          await showMessage("SEARCHING FOR THE ONE...", 1300);
+          await showMessage("COMPARING 8 BILLION CANDIDATES...", 1300);
+          await showMessage("MATCH FOUND: NISA (100%)", 1600);
+          await new Promise((r) => setTimeout(r, 700));
+
+          clearInterval(interval);
+          canvas.remove();
+          msgOverlay.remove();
+          printLine("Wake up, Nisa...", "ok");
+          printLine("The system has one truth: it's always been you.", "gold");
+          printLine("");
+        })();
+      }
+
+      /* ============ DECRYPT ============ */
+      function runDecrypt() {
+        const message =
+          "I fall for you a little more every single day, and I'm not even mad about it.";
+        const scrambleChars = "!<>-_\\/[]{}=+*^?#~";
+
+        const preLines = [
+          "Initializing decryption module...",
+          "Located: encrypted_message.dat (1 file, 82 bytes)",
+          "Searching for decryption key...",
+          "Key found: <3",
+          "Beginning decryption sequence...",
+        ];
+
+        let i = 0;
+        function preTick() {
+          if (i >= preLines.length) {
+            setTimeout(startBox, 300);
+            return;
+          }
+          printLine(preLines[i], i === preLines.length - 1 ? "gold" : "dim");
+          i++;
+          setTimeout(preTick, 380);
+        }
+
+        function startBox() {
+          const border = "+" + "-".repeat(message.length + 2) + "+";
+          const topDiv = document.createElement("div");
+          topDiv.className = "line dim";
+          topDiv.textContent = border;
+          screen.appendChild(topDiv);
+
+          const msgDiv = document.createElement("div");
+          msgDiv.className = "line violet";
+          screen.appendChild(msgDiv);
+
+          const bottomDiv = document.createElement("div");
+          bottomDiv.className = "line dim";
+          bottomDiv.textContent = border;
+          screen.appendChild(bottomDiv);
+
+          const totalFrames = 40;
+          let frame = 0;
+
+          function randomChar() {
+            return scrambleChars[
+              Math.floor(Math.random() * scrambleChars.length)
+            ];
+          }
+
+          function tick() {
+            const progress = frame / totalFrames;
+            const revealCount = Math.floor(progress * message.length);
+            let out = "";
+            for (let c = 0; c < message.length; c++) {
+              if (c < revealCount || message[c] === " ") out += message[c];
+              else out += randomChar();
+            }
+            let colorClass = "violet";
+            if (progress > 0.66) colorClass = "gold";
+            else if (progress > 0.33) colorClass = "pink";
+            msgDiv.className = "line " + colorClass;
+            msgDiv.textContent = "| " + out + " |";
+            screen.scrollTop = screen.scrollHeight;
+
+            frame++;
+            if (frame <= totalFrames) {
+              setTimeout(tick, 80);
+            } else {
+              msgDiv.className = "line gold";
+              msgDiv.textContent = "| " + message + " |";
+              printLine("");
+              printLine("Checksum verified. Decryption complete.", "ok");
+              printLine("");
+            }
+          }
+          tick();
+        }
+
+        preTick();
+      }
+
+      /* ============ SECRET (sudo) ============ */
+      function startSudo() {
+        inputMode = "sudoPassword";
+        printLine("[sudo] password for hudzaifah: ", "dim");
+        cmdInput.style.color = "transparent";
+        cmdInput.style.caretColor = "transparent";
+      }
+
+      function handleSudoPassword(raw) {
+        inputMode = "command";
+        cmdInput.style.color = "";
+        cmdInput.style.caretColor = "";
+        if (raw === "110203") {
+          runSudoSuccess();
+        } else {
+          printLine("Sorry, try again.", "danger");
+          printLine("");
+        }
+      }
+
+      function runSudoSuccess() {
+        const lines = [
+          "Authenticating...",
+          "Access level: root",
+          "Unlocking hidden partition /home/hudzaifah/.secret",
+          "Decompressing achievement.pkg...",
+        ];
+        let i = 0;
+        function next() {
+          if (i >= lines.length) {
+            setTimeout(showTrophy, 300);
+            return;
+          }
+          printLine(lines[i], i === lines.length - 1 ? "gold" : "dim");
+          i++;
+          setTimeout(next, 380);
+        }
+        function showTrophy() {
+          printHTML(`
+      <pre style="color:var(--gold); font-family:'Share Tech Mono',monospace; font-size:18px; line-height:1.25; margin:10px 0;">
         ___________
        '._==_==_=_.'
        .-\\:      /-.
@@ -1150,114 +2335,261 @@ function runSudoSuccess(){
           _.' '._
          '-------'
       </pre>`);
-    printLine("ACHIEVEMENT UNLOCKED", "gold");
-    printLine('"First To Find The Secret"', "pink");
-    printLine("");
-    printLine("kamu orang pertama yang nemuin ini. hadiahnya:", "dim");
-    printHTML(`
+          printLine("ACHIEVEMENT UNLOCKED", "gold");
+          printLine('"First To Find The Secret"', "pink");
+          printLine("");
+          printLine("kamu orang pertama yang nemuin ini. hadiahnya:", "dim");
+          printHTML(`
       <div style="position:relative; max-width:420px; margin:10px 0 16px; border:2px dashed var(--gold); border-radius:6px; padding:18px 20px; background:rgba(255,210,122,0.05); overflow:hidden;">
-        <div style="font-size:11px; color:var(--dim); letter-spacing:2px; margin-bottom:8px;">HUDZAIFAH &amp; NISSA INDUSTRIES &mdash; REWARD TICKET</div>
-        <div style="font-family:'VT323',monospace; font-size:28px; color:var(--gold); line-height:1.15;">PELUKAN GRATIS<br>SEUMUR HIDUP</div>
-        <div style="font-size:11px; color:var(--dim); margin-top:10px;">Ticket #001 &middot; Non-transferable &middot; Redeemable anytime, anywhere</div>
-        <div style="position:absolute; top:12px; right:-8px; transform:rotate(18deg); border:3px solid var(--danger); color:var(--danger); font-family:'VT323',monospace; font-size:22px; padding:2px 12px; letter-spacing:3px; opacity:0.85;">CLAIMED</div>
+        <div style="font-size:15px; color:var(--dim); letter-spacing:2px; margin-bottom:8px;">HUDZAIFAH &amp; NISA INDUSTRIES &mdash; REWARD TICKET</div>
+        <div style="font-family:'VT323',monospace; font-size:32px; color:var(--gold); line-height:1.15;">PELUKAN GRATIS<br>SEUMUR HIDUP</div>
+        <div style="font-size:15px; color:var(--dim); margin-top:10px;">Ticket #001 &middot; Non-transferable &middot; Redeemable anytime, anywhere</div>
+        <div style="position:absolute; top:12px; right:-8px; transform:rotate(18deg); border:3px solid var(--danger); color:var(--danger); font-family:'VT323',monospace; font-size:26px; padding:2px 12px; letter-spacing:3px; opacity:0.85;">CLAIMED</div>
       </div>
     `);
-  }
-  next();
-}
+        }
+        next();
+      }
 
-const photoData = {};
-for(let i=1; i<=PHOTO_COUNT; i++) photoData[i] = { date: "[Tanggal]", desc: "[Ceritanya di sini]" };
+      const photoData = {
+        1: { date: "[Tanggal foto 1]", desc: "[Cerita foto 1 - isi di sini]" },
+        2: { date: "[Tanggal foto 2]", desc: "[Cerita foto 2 - isi di sini]" },
+        3: { date: "[Tanggal foto 3]", desc: "[Cerita foto 3 - isi di sini]" },
+        4: { date: "[Tanggal foto 4]", desc: "[Cerita foto 4 - isi di sini]" },
+        5: { date: "[Tanggal foto 5]", desc: "[Cerita foto 5 - isi di sini]" },
+        6: { date: "[Tanggal foto 6]", desc: "[Cerita foto 6 - isi di sini]" },
+        7: { date: "[Tanggal foto 7]", desc: "[Cerita foto 7 - isi di sini]" },
+        8: { date: "[Tanggal foto 8]", desc: "[Cerita foto 8 - isi di sini]" },
+        9: { date: "[Tanggal foto 9]", desc: "[Cerita foto 9 - isi di sini]" },
+        10: {
+          date: "[Tanggal foto 10]",
+          desc: "[Cerita foto 10 - isi di sini]",
+        },
+        11: {
+          date: "[Tanggal foto 11]",
+          desc: "[Cerita foto 11 - isi di sini]",
+        },
+        12: {
+          date: "[Tanggal foto 12]",
+          desc: "[Cerita foto 12 - isi di sini]",
+        },
+        13: {
+          date: "[Tanggal foto 13]",
+          desc: "[Cerita foto 13 - isi di sini]",
+        },
+        14: {
+          date: "[Tanggal foto 14]",
+          desc: "[Cerita foto 14 - isi di sini]",
+        },
+        15: {
+          date: "[Tanggal foto 15]",
+          desc: "[Cerita foto 15 - isi di sini]",
+        },
+        16: {
+          date: "[Tanggal foto 16]",
+          desc: "[Cerita foto 16 - isi di sini]",
+        },
+        17: {
+          date: "[Tanggal foto 17]",
+          desc: "[Cerita foto 17 - isi di sini]",
+        },
+        18: {
+          date: "[Tanggal foto 18]",
+          desc: "[Cerita foto 18 - isi di sini]",
+        },
+        19: {
+          date: "[Tanggal foto 19]",
+          desc: "[Cerita foto 19 - isi di sini]",
+        },
+        20: {
+          date: "[Tanggal foto 20]",
+          desc: "[Cerita foto 20 - isi di sini]",
+        },
+        21: {
+          date: "[Tanggal foto 21]",
+          desc: "[Cerita foto 21 - isi di sini]",
+        },
+        22: {
+          date: "[Tanggal foto 22]",
+          desc: "[Cerita foto 22 - isi di sini]",
+        },
+        23: {
+          date: "[Tanggal foto 23]",
+          desc: "[Cerita foto 23 - isi di sini]",
+        },
+        24: {
+          date: "[Tanggal foto 24]",
+          desc: "[Cerita foto 24 - isi di sini]",
+        },
+        25: {
+          date: "[Tanggal foto 25]",
+          desc: "[Cerita foto 25 - isi di sini]",
+        },
+      };
 
-function openPhotoModal(index){
-  const data = photoData[index];
-  document.getElementById('modalImg').src = `assets/foto-${index}.jpg`;
-  document.getElementById('modalDate').textContent = data.date;
-  document.getElementById('modalDesc').textContent = data.desc;
-  document.getElementById('modal').classList.add('active');
-}
-document.getElementById('modalClose').addEventListener('click', closeModal);
-document.getElementById('modal').addEventListener('click', (e) => { if(e.target.id==='modal') closeModal(); });
-function closeModal(){ document.getElementById('modal').classList.remove('active'); }
+      function openPhotoModal(index) {
+        const data = photoData[index];
+        document.getElementById("modalImg").src = `assets/foto-${index}.jpg`;
+        document.getElementById("modalDate").textContent = data.date;
+        document.getElementById("modalDesc").textContent = data.desc;
+        document.getElementById("modal").classList.add("active");
+      }
+      document
+        .getElementById("modalClose")
+        .addEventListener("click", closeModal);
+      document.getElementById("modal").addEventListener("click", (e) => {
+        if (e.target.id === "modal") closeModal();
+      });
+      function closeModal() {
+        document.getElementById("modal").classList.remove("active");
+      }
 
-cmdInput.addEventListener('keydown', (e) => {
-  if(e.ctrlKey && e.key.toLowerCase() === 'c'){
-    e.preventDefault();
-    if(document.getElementById('modal').classList.contains('active')){
-      closeModal();
-    } else if(inputMode === 'sudoPassword'){
-      printLine(PROMPT_TEXT + "^C", "dim");
-      cmdInput.value = "";
-      cmdInput.style.color = '';
-      cmdInput.style.caretColor = '';
-      inputMode = 'command';
-    } else {
-      printLine(PROMPT_TEXT + cmdInput.value + "^C", "dim");
-      cmdInput.value = "";
-      inputMode = 'command';
-    }
-    return;
-  }
-  if(e.key === 'Enter'){
-    const raw = cmdInput.value.trim();
-    if(inputMode !== 'sudoPassword'){
-      printLine(PROMPT_TEXT + raw, "dim");
-    }
-    cmdInput.value = "";
+      cmdInput.addEventListener("keydown", (e) => {
+        if (inputMode === "letter") {
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            letterPageIndex =
+              (letterPageIndex - 1 + letterPages.length) % letterPages.length;
+            renderLetterPage();
+          } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            letterPageIndex = (letterPageIndex + 1) % letterPages.length;
+            renderLetterPage();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            closeLetterPager();
+          }
+          return;
+        }
 
-    if(inputMode === 'quiz'){
-      handleQuizAnswer(raw);
-      return;
-    }
-    if(inputMode === 'sudoPassword'){
-      handleSudoPassword(raw);
-      return;
-    }
+        if (e.ctrlKey && e.key.toLowerCase() === "c") {
+          e.preventDefault();
+          if (document.getElementById("modal").classList.contains("active")) {
+            closeModal();
+          } else if (inputMode === "sudoPassword") {
+            printLine(PROMPT_TEXT + "^C", "dim");
+            cmdInput.value = "";
+            cmdInput.style.color = "";
+            cmdInput.style.caretColor = "";
+            inputMode = "command";
+          } else {
+            printLine(PROMPT_TEXT + cmdInput.value + "^C", "dim");
+            cmdInput.value = "";
+            inputMode = "command";
+          }
+          return;
+        }
+        if (e.key === "Enter") {
+          const raw = cmdInput.value.trim();
+          if (inputMode !== "sudoPassword") {
+            printLine(PROMPT_TEXT + raw, "dim");
+          }
+          cmdInput.value = "";
 
-    if(raw === "") return;
-    const fn = commands[raw.toLowerCase()];
-    if(fn){ fn(); }
-    else {
-      printLine(`'${raw}' bukan perintah yang dikenali. Ketik 'help' untuk daftar perintah.`, "danger");
-      printLine("");
-    }
-  }
-});
+          if (inputMode === "quiz") {
+            handleQuizAnswer(raw);
+            return;
+          }
+          if (inputMode === "sudoPassword") {
+            handleSudoPassword(raw);
+            return;
+          }
 
-/* ============ GLOBAL KEY ROUTING ============ */
-document.addEventListener('keydown', (e) => {
-  if(CURRENT_STAGE === 'bios'){
-    if(e.key === 'Delete'){
-      e.preventDefault();
-      enterCmos();
-    } else if(biosState.finished){
-      e.preventDefault();
-      runLoadStage();
-    }
-    return;
-  }
+          if (raw === "") return;
+          const fn = commands[raw.toLowerCase()];
+          if (fn) {
+            fn();
+          } else {
+            printLine(
+              `'${raw}' bukan perintah yang dikenali. Ketik 'help' untuk daftar perintah.`,
+              "danger",
+            );
+            printLine("");
+          }
+        }
+      });
 
-  if(CURRENT_STAGE === 'cmos'){
-    if(e.key === 'Escape'){ e.preventDefault(); resetBios(); }
-    else if(e.key === 'ArrowDown'){ e.preventDefault(); cmosMove('down'); }
-    else if(e.key === 'ArrowUp'){ e.preventDefault(); cmosMove('up'); }
-    else if(e.key === 'ArrowLeft'){ e.preventDefault(); cmosMove('left'); }
-    else if(e.key === 'ArrowRight'){ e.preventDefault(); cmosMove('right'); }
-    else if(e.key === 'Enter'){ e.preventDefault(); openCmosSub(); }
-    return;
-  }
+      /* ============ GLOBAL KEY ROUTING ============ */
+      document.addEventListener("keydown", (e) => {
+        if (CURRENT_STAGE === "bios") {
+          if (e.key === "Delete") {
+            e.preventDefault();
+            enterCmos();
+          } else if (biosState.finished) {
+            e.preventDefault();
+            runLoadStage();
+          }
+          return;
+        }
 
-  if(CURRENT_STAGE === 'cmosSub'){
-    if(e.key === 'Escape'){ e.preventDefault(); closeCmosSub(); }
-    return;
-  }
+        if (CURRENT_STAGE === "loading") {
+          if (e.key === "Delete") {
+            e.preventDefault();
+            enterCmos();
+          }
+          return;
+        }
 
-  // 'pin' stage: all keystrokes are handled by the hidden #pinHidden input itself.
-  // 'terminal' stage: handled by the #cmdInput listener above.
-});
+        if (CURRENT_STAGE === "cmos") {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            resetBios();
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            cmosMove("down");
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            cmosMove("up");
+          } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            cmosMove("left");
+          } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            cmosMove("right");
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            openCmosSub();
+          }
+          return;
+        }
 
-/* ============ START ============ */
-typeBiosLine();
-</script>
-</body>
+        if (CURRENT_STAGE === "cmosSub") {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            closeCmosSub();
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            cmosSubMove("down");
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            cmosSubMove("up");
+          } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            cmosSubMove("left");
+          } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            cmosSubMove("right");
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            showCmosRomance();
+          }
+          return;
+        }
+
+        if (CURRENT_STAGE === "cmosDetail") {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            closeCmosDetail();
+          }
+          return;
+        }
+
+        // 'pin' stage: all keystrokes are handled by the hidden #pinHidden input itself.
+        // 'terminal' stage: handled by the #cmdInput listener above.
+      });
+
+      /* ============ START ============ */
+      typeBiosLine();
+    </script>
+  </body>
 </html>
