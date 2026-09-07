@@ -78,7 +78,7 @@
       #biosStage {
         padding: 30px 40px;
         color: var(--bios-text);
-        font-size: 19px;
+        font-size: 15px;
         line-height: 1.55;
         white-space: pre-wrap;
       }
@@ -86,8 +86,9 @@
         position: absolute;
         bottom: 26px;
         left: 40px;
-        font-size: 17px;
+        font-size: clamp(9px, 1.6vw, 17px);
         color: #9c9c9c;
+        white-space: nowrap;
       }
       .bios-hint u {
         color: #e8d97a;
@@ -817,6 +818,10 @@
         .cmos-sub-grid {
           grid-template-columns: 1fr;
         }
+        .bios-hint {
+          left: 16px;
+          bottom: 16px;
+        }
       }
     </style>
   </head>
@@ -992,7 +997,14 @@
       // commands, every CMOS detail screen, every photo, and the video.
       // Everything lives as prefixed keys in one array so one overall
       // percentage can be computed across all of them.
-      const KNOWN_SECRETS = ["hack", "scan", "matrix", "decrypt", "ping", "sudo"];
+      const KNOWN_SECRETS = [
+        "hack",
+        "scan",
+        "matrix",
+        "decrypt",
+        "ping",
+        "sudo",
+      ];
       // Ordinary commands that now also count toward progress the moment
       // they're run. 'video' isn't listed here because it already has its
       // own dedicated "video:1" key; 'delete-local' is intentionally never
@@ -1024,7 +1036,9 @@
       // one-time migration from the old secrets-only tracker, if present
       (function migrateOldSecrets() {
         try {
-          const old = JSON.parse(localStorage.getItem("nisaos_secrets") || "null");
+          const old = JSON.parse(
+            localStorage.getItem("nisaos_secrets") || "null",
+          );
           if (old && Array.isArray(old)) {
             let changed = false;
             old.forEach((name) => {
@@ -2040,7 +2054,9 @@
           printLine("  matrix     - ???");
           printLine("  decrypt    - buka pesan rahasia yang terenkripsi");
           printLine("  ping       - cek koneksi ke hati Nisa");
-          printLine("  progress   - lihat rahasia apa saja yang sudah ditemukan");
+          printLine(
+            "  progress   - lihat rahasia apa saja yang sudah ditemukan",
+          );
           printLine("  clear      - bersihkan layar");
           printLine("");
         },
@@ -2121,13 +2137,15 @@
           ).length;
 
           printLine("EXPLORATION TRACKER:", "gold");
-          printLine(
-            `  BIOS/CMOS details    : ${cmosFound}/${cmosTotal}`,
-          );
+          printLine(`  BIOS/CMOS details    : ${cmosFound}/${cmosTotal}`);
           printLine(`  Foto                 : ${photosFound}/${PHOTO_COUNT}`);
           printLine(`  Video                : ${videoFound}/1`);
-          printLine(`  Secret commands      : ${secretsCount}/${KNOWN_SECRETS.length}`);
-          printLine(`  Command lain         : ${ordinaryCount}/${ORDINARY_COMMANDS.length}`);
+          printLine(
+            `  Secret commands      : ${secretsCount}/${KNOWN_SECRETS.length}`,
+          );
+          printLine(
+            `  Command lain         : ${ordinaryCount}/${ORDINARY_COMMANDS.length}`,
+          );
           printLine("");
           KNOWN_SECRETS.forEach((k) => {
             const found = isFound("secret:" + k);
@@ -2752,7 +2770,10 @@
           "(BIOS/CMOS, foto, video, command, secret) dari penyimpanan lokal.",
           "danger",
         );
-        printLine("Ketik 'yakin' untuk konfirmasi, atau apapun yang lain untuk batal.", "dim");
+        printLine(
+          "Ketik 'yakin' untuk konfirmasi, atau apapun yang lain untuk batal.",
+          "dim",
+        );
       }
 
       function handleDeleteLocalConfirm(raw) {
@@ -3106,7 +3127,8 @@
 
           const konamiKey = e.key.length === 1 ? e.key.toLowerCase() : e.key;
           konamiBuffer.push(konamiKey);
-          if (konamiBuffer.length > KONAMI_SEQUENCE.length) konamiBuffer.shift();
+          if (konamiBuffer.length > KONAMI_SEQUENCE.length)
+            konamiBuffer.shift();
           if (
             konamiBuffer.length === KONAMI_SEQUENCE.length &&
             konamiBuffer.every((k, idx) => k === KONAMI_SEQUENCE[idx])
