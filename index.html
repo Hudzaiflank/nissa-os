@@ -601,6 +601,70 @@
         margin-bottom: 0;
       }
 
+      /* ===== NEOFETCH ===== */
+      .neofetch-wrap {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 8px 0 14px;
+        white-space: normal;
+      }
+      .neofetch-art {
+        display: block;
+        width: 150px;
+        height: 130px;
+        margin: 0;
+        animation: neofetchBeat 1.6s ease-in-out infinite;
+        transform-origin: center;
+        flex-shrink: 0;
+      }
+      @keyframes neofetchBeat {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        20% {
+          transform: scale(1.06);
+        }
+        35% {
+          transform: scale(0.99);
+        }
+        50% {
+          transform: scale(1.03);
+        }
+        70% {
+          transform: scale(1);
+        }
+      }
+      .neofetch-info {
+        font-size: 17px;
+        line-height: 1.55;
+      }
+      .neofetch-info .nf-title {
+        color: var(--gold);
+        margin-bottom: 4px;
+      }
+      .neofetch-info .nf-rule {
+        color: var(--dim);
+        margin-bottom: 4px;
+      }
+      .neofetch-info .nf-row {
+        display: flex;
+      }
+      .neofetch-info .nf-row .nf-key {
+        color: var(--pink);
+        min-width: 108px;
+        flex-shrink: 0;
+      }
+      .neofetch-info .nf-row .nf-val {
+        color: var(--text);
+      }
+      .neofetch-swatches {
+        margin-top: 8px;
+        letter-spacing: -1px;
+      }
+
       #inputRow {
         display: flex;
         align-items: center;
@@ -1012,6 +1076,7 @@
       const ORDINARY_COMMANDS = [
         "help",
         "whoami",
+        "neofetch",
         "anniv",
         "letter",
         "photos",
@@ -1241,6 +1306,11 @@
       function resetBios() {
         clearTimeout(biosState.timer);
         clearTimeout(loadTimer);
+        // reset PIN juga di sini, jaga-jaga
+        pinValue = "";
+        pinHidden.value = "";
+        pinError.textContent = "";
+        pinDots.forEach((dot) => dot.classList.remove("filled"));
         biosTextEl.textContent = "";
         document.getElementById("biosHint").style.display = "none";
         biosState = { line: 0, timer: null, finished: false };
@@ -1658,6 +1728,11 @@
 
       function showPinStage() {
         showStage("pinStage", "pin");
+        // reset supaya PIN selalu mulai kosong tiap kali layar ini muncul
+        pinValue = "";
+        pinHidden.value = "";
+        pinError.textContent = "";
+        pinDots.forEach((dot) => dot.classList.remove("filled"));
         if (document.activeElement) document.activeElement.blur();
         focusPinInput();
       }
@@ -1778,6 +1853,9 @@
       const termProgressStatus = document.getElementById("termProgressStatus");
       const PROMPT_TEXT = "/home/hudzaifah(nisa) » ";
       let inputMode = "command"; // 'command' | 'quiz' | 'sudoPassword' | 'confirmDeleteLocal'
+      let cmdHistory = [];
+      let cmdHistoryIndex = 0;
+      let cmdDraft = "";
       let liveStatusTimer = null;
 
       function updateTermLiveStatus() {
@@ -1939,6 +2017,119 @@
         screen.scrollTop = screen.scrollHeight;
       }
 
+      let neofetchAnimId = null;
+      function initNeofetchHeart(canvas) {
+        if (neofetchAnimId) cancelAnimationFrame(neofetchAnimId);
+        const ctx = canvas.getContext("2d");
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+        const cssW = canvas.clientWidth || 150;
+        const cssH = canvas.clientHeight || 130;
+        canvas.width = cssW * dpr;
+        canvas.height = cssH * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const fontSize = 10;
+        const cellW = fontSize * 0.62;
+        const cellH = fontSize * 0.95;
+        const cols = Math.floor(cssW / cellW);
+        const rows = Math.floor(cssH / cellH);
+        const chars = " .:-=+*#%@";
+        const palette = [
+          [70, 10, 60],
+          [200, 40, 120],
+          [255, 90, 170],
+          [255, 160, 200],
+          [255, 224, 236],
+        ];
+
+        ctx.font = `${fontSize}px "Courier New", monospace`;
+        ctx.textBaseline = "top";
+
+        function heartInside(x, y) {
+          const v = Math.pow(x * x + y * y - 1, 3) - x * x * y * y * y;
+          return v <= 0;
+        }
+
+        function draw(time) {
+          ctx.clearRect(0, 0, cssW, cssH);
+          for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+              const nx = ((col - cols / 2 + 0.5) / (cols / 2)) * 1.3;
+              const nyRaw = (rows / 2 - row - 0.5) / (rows / 2);
+              const ny = nyRaw * 1.35 + 0.2;
+              if (!heartInside(nx, ny)) continue;
+              const wave =
+                Math.sin(nx * 3.2 + time * 1.5) +
+                Math.sin(ny * 3.4 - time * 1.2) +
+                Math.sin((nx + ny) * 2.1 + time * 0.9);
+              let v = (wave / 3) * 0.5 + 0.5;
+              v = Math.max(0, Math.min(1, v));
+              const charIndex = Math.min(
+                chars.length - 1,
+                Math.floor(v * chars.length),
+              );
+              if (charIndex === 0) continue;
+              const pos = v * (palette.length - 1);
+              const pi = Math.min(palette.length - 2, Math.floor(pos));
+              const blend = pos - pi;
+              const c1 = palette[pi];
+              const c2 = palette[pi + 1];
+              const r = Math.round(c1[0] + (c2[0] - c1[0]) * blend);
+              const g = Math.round(c1[1] + (c2[1] - c1[1]) * blend);
+              const b = Math.round(c1[2] + (c2[2] - c1[2]) * blend);
+              ctx.fillStyle = `rgba(${r},${g},${b},${Math.min(1, 0.6 + v * 0.5)})`;
+              ctx.fillText(chars[charIndex], col * cellW, row * cellH);
+            }
+          }
+          neofetchAnimId = requestAnimationFrame((t) => draw(t / 1000));
+        }
+        draw(0);
+      }
+
+      function runNeofetch() {
+        const elapsed = Math.max(0, new Date() - ANNIV_DATE);
+        const totalSeconds = Math.floor(elapsed / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const { total, foundCount, percent } = getProgressTotals();
+
+        const rows = [
+          ["OS", "NisaOS 4.0 (love-core)"],
+          ["Host", "Hudzaifah & Nisa Industries"],
+          ["Kernel", "LOVE 2.6-heart"],
+          ["Uptime", `${days}d ${hours}h ${minutes}m together`],
+          ["Packages", `${PHOTO_COUNT} photos, 1 video (memories)`],
+          ["Shell", "heartsh 4.0"],
+          ["DE", "Cuddle Environment"],
+          ["WM", "Hug Manager"],
+          ["CPU", "LOVE-CORE i9 @ forever GHz"],
+          ["Memory", "999999999K / \u221E"],
+          ["Exploration", `${percent}% (${foundCount}/${total})`],
+        ]
+          .map(
+            (r) =>
+              `<div class="nf-row"><span class="nf-key">${r[0]}  </span><span class="nf-val"> ${r[1]}</span></div>`,
+          )
+          .join("");
+
+        printHTML(`
+        <div class="neofetch-wrap">
+          <canvas class="neofetch-art" id="neofetchHeartCanvas"></canvas>
+          <div class="neofetch-info">
+            <div class="nf-title">hudzaifah@nisa-os</div>
+            <div class="nf-rule">-----------------</div>
+            ${rows}
+            <div class="neofetch-swatches">
+              <span style="color:var(--pink)">\u25A0</span><span style="color:var(--gold)">\u25A0</span><span style="color:var(--violet)">\u25A0</span><span style="color:var(--ok)">\u25A0</span><span style="color:var(--danger)">\u25A0</span><span style="color:var(--dim)">\u25A0</span><span style="color:var(--text)">\u25A0</span>
+            </div>
+          </div>
+        </div>
+      `);
+        const heartCanvas = document.getElementById("neofetchHeartCanvas");
+        if (heartCanvas) initNeofetchHeart(heartCanvas);
+      }
+
       function runWhoami() {
         printLine("Starting identity scan...", "dim");
         printLine("");
@@ -2044,6 +2235,7 @@
         help: () => {
           printLine("DAFTAR PERINTAH:", "gold");
           printLine("  whoami     - siapa kamu di sistem ini");
+          printLine("  neofetch   - info sistem (dan hubungan kita)");
           printLine("  letter     - baca surat untuk " + PARTNER_NAME);
           printLine("  photos     - buka galeri foto kami");
           printLine("  video      - putar video kenangan");
@@ -2061,6 +2253,7 @@
           printLine("");
         },
         whoami: () => runWhoami(),
+        neofetch: () => runNeofetch(),
         anniv: () => {
           startAnnivClock();
           printLine("Semoga masih banyak hari ke depan yang bisa dihitung. :)");
@@ -2977,10 +3170,17 @@
         if (e.key === "Enter") {
           beepEnter();
           const raw = cmdInput.value.trim();
+          const wasCommandMode = inputMode === "command";
           if (inputMode !== "sudoPassword") {
             printLine(PROMPT_TEXT + raw, "dim");
           }
           cmdInput.value = "";
+
+          if (wasCommandMode && raw !== "") {
+            cmdHistory.push(raw);
+            cmdHistoryIndex = cmdHistory.length;
+            cmdDraft = "";
+          }
 
           if (inputMode === "quiz") {
             handleQuizAnswer(raw);
@@ -3008,6 +3208,55 @@
               "danger",
             );
             printLine("");
+          }
+        } else if (
+          inputMode === "command" &&
+          !e.ctrlKey &&
+          !e.altKey &&
+          e.key === "ArrowUp"
+        ) {
+          e.preventDefault();
+          if (cmdHistory.length === 0) return;
+          if (cmdHistoryIndex === cmdHistory.length) cmdDraft = cmdInput.value;
+          cmdHistoryIndex = Math.max(0, cmdHistoryIndex - 1);
+          cmdInput.value = cmdHistory[cmdHistoryIndex];
+          cmdInput.setSelectionRange(
+            cmdInput.value.length,
+            cmdInput.value.length,
+          );
+        } else if (
+          inputMode === "command" &&
+          !e.ctrlKey &&
+          !e.altKey &&
+          e.key === "ArrowDown"
+        ) {
+          e.preventDefault();
+          if (cmdHistory.length === 0) return;
+          cmdHistoryIndex = Math.min(cmdHistory.length, cmdHistoryIndex + 1);
+          cmdInput.value =
+            cmdHistoryIndex === cmdHistory.length
+              ? cmdDraft
+              : cmdHistory[cmdHistoryIndex];
+          cmdInput.setSelectionRange(
+            cmdInput.value.length,
+            cmdInput.value.length,
+          );
+        } else if (inputMode === "command" && e.key === "Tab") {
+          e.preventDefault();
+          const typed = cmdInput.value.trim().toLowerCase();
+          if (typed === "") return;
+          const matches = Object.keys(commands).filter((name) =>
+            name.startsWith(typed),
+          );
+          if (matches.length === 1) {
+            cmdInput.value = matches[0];
+            cmdInput.setSelectionRange(
+              cmdInput.value.length,
+              cmdInput.value.length,
+            );
+          } else if (matches.length > 1) {
+            printLine(PROMPT_TEXT + cmdInput.value, "dim");
+            printLine(matches.join("   "), "dim");
           }
         } else if (
           inputMode === "command" &&
