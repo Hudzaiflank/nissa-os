@@ -1714,7 +1714,7 @@
           }
           const row = document.createElement("div");
           row.className = "load-line";
-          row.innerHTML = `<span>${loadItems[i]}:</span><span class="ok">[ OK ]</span>`;
+          row.innerHTML = `<span>${loadItems[i]}</span><span class="ok">[ OK ]</span>`;
           container.appendChild(row);
           i++;
           loadTimer = setTimeout(next, 140);
@@ -2272,7 +2272,7 @@
           for (let i = 1; i <= PHOTO_COUNT; i++) {
             html += `
           <div class="photo-thumb" data-index="${i}">
-            <img src="assets/foto-${i}.jpg" alt="foto ${i}" loading="lazy"
+            <img src="assets/foto-${i}.jpeg" alt="foto ${i}" loading="lazy"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="photo-fallback">foto-${i}.jpg<br>belum ada</div>
             <span class="idx">${i}</span>
@@ -3052,84 +3052,111 @@
       }
 
       const photoData = {
-        1: { date: "[Tanggal foto 1]", desc: "[Cerita foto 1 - isi di sini]" },
-        2: { date: "[Tanggal foto 2]", desc: "[Cerita foto 2 - isi di sini]" },
-        3: { date: "[Tanggal foto 3]", desc: "[Cerita foto 3 - isi di sini]" },
-        4: { date: "[Tanggal foto 4]", desc: "[Cerita foto 4 - isi di sini]" },
-        5: { date: "[Tanggal foto 5]", desc: "[Cerita foto 5 - isi di sini]" },
-        6: { date: "[Tanggal foto 6]", desc: "[Cerita foto 6 - isi di sini]" },
-        7: { date: "[Tanggal foto 7]", desc: "[Cerita foto 7 - isi di sini]" },
-        8: { date: "[Tanggal foto 8]", desc: "[Cerita foto 8 - isi di sini]" },
-        9: { date: "[Tanggal foto 9]", desc: "[Cerita foto 9 - isi di sini]" },
+        1: {
+          date: "25 April 2026",
+          desc: "I still remember this pap because you sent it when you were on your way to meet me at my graduation. I remember seeing this and feeling happy knowing that you were actually coming. It might look like just a random photo of you on your way, but for me it became a small part of one of the most important days in my life. Having you there made that day feel even more special, and honestly, I’m really glad you came. Looking at this now, I just realize how lucky I was to have you there with me that day",
+        },
+        2: {
+          date: "25 April 2026",
+          desc: "I honestly thought you weren’t going to make it, so seeing you actually there after my graduation was such a nice surprise. After everything was done, we finally got to take this picture together, and I remember being genuinely happy because you really did come. You probably don’t realize how much that meant to me, but having you there on that day made my graduation feel even more complete. Looking at this photo now, I think this is one of those moments I’ll always remember, not just because it was my graduation, but because you showed up when I thought you wouldn’t ",
+        },
+        3: {
+          date: "07 May 2026",
+          desc: "This was our first FaceTime, and I still remember how nervous and excited I was because everything was still so new between us. I made this SG right after we got together, thinking it was just a funny little moment, but then you got mad at me and I immediately started panicking hehe. Looking back at it now, it’s actually kinda funny how nervous I was over something so simple, but I guess that was just me trying my best not to mess things up with you at the beginning. I’m glad I still have this photo because it reminds me of how everything started between us",
+        },
+        4: {
+          date: "11 May 2026",
+          desc: "this was the first photo you sent me after we officially got together. It’s such a simple picture, but I still remember how happy I was seeing you send me something like this for the first time. Everything was still so new between us back then, so even little things like getting a random picture from you already felt special to me. Looking at it now is kinda funny because we were literally just starting, but somehow this small moment became one of the memories I still remember until now",
+        },
+        5: {
+          date: "11 May 2026",
+          desc: "I remember this one because you were clearly so tired that you just fell asleep while we were on FaceTime. I think it was actually kinda cute seeing you like this, even though I was probably still talking to you while you were already completely gone. It was such a simple moment, but I like having little memories like this because it feels very us, just randomly calling each other at the end of the day and one of us eventually falling asleep first hehe",
+        },
+        6: {
+          date: "13 May 2026",
+          desc: "This was the first time we held hands and also the first time we went to a cafe together after we got together. We hadn’t even had our proper date yet, and somehow we were already here trying to figure out what we were going to do for that date. I remember how everything still felt a little awkward but also exciting because we were still getting used to being together. Looking at this picture now, it’s funny how simple the moment was, but it was actually one of those small firsts that I’m really glad I got to experience with you",
+        },
+        7: {
+          date: "14 May 2026",
+          desc: "This was the result of all that planning for our proper date, our first real date at NuArt. I was actually sick that day, but I still wanted to go because I really wanted to spend that time with you. Physically I was there with you, but mentally I was still thinking about work the whole time wkwk. It’s kinda funny looking back at it because even on our first proper date I somehow couldn’t fully leave work behind. But still, I’m really glad we went that day, because despite me being sick and my brain being somewhere else half the time, I got to spend that day with you and finally have our first proper date",
+        },
+        8: {
+          date: "14 May 2026",
+          desc: "I took this one myself, and honestly I still think you looked so pretty here. We were still at NuArt, and even though I wasn’t feeling that well, I remember seeing you sitting there and thinking you looked really cute. I just had to take a picture because somehow you looked so good without even trying that hard. This is probably one of my favorite pictures from that day, not because anything special was happening, but simply because it’s you being you and I happened to be there to capture it",
+        },
+        9: {
+          date: "18 May 2026",
+          desc: "This was you while you were working, and I think this was also the first time I got to see what Cikal looked like. I remember you sending me this picture and somehow I ended up knowing another little part of your life, like who you were with and what your days looked like when you were working. It’s just a simple picture at work, but I like memories like this because back then I was still getting to know you and slowly becoming part of your everyday life, even through random pictures like this one",
+        },
         10: {
-          date: "[Tanggal foto 10]",
-          desc: "[Cerita foto 10 - isi di sini]",
+          date: "18 May 2026",
+          desc: "This picture is so funny because you were literally just in the toilet and still decided to send me a picture like this. I don’t even know what you were thinking at that moment, but your face makes it even funnier. It’s such a random picture and probably means absolutely nothing to anyone else, but these are exactly the kind of stupid little moments I like keeping because this is the side of you that I get to see and honestly it’s cute banget wkwk",
         },
         11: {
-          date: "[Tanggal foto 11]",
-          desc: "[Cerita foto 11 - isi di sini]",
+          date: "19 May 2026",
+          desc: "This was you after work, getting ready to pray Isya. I remember seeing this and thinking you looked really sweet, there was just something so calm and peaceful about seeing you like this. Maybe it’s just a simple picture, but I really like how different the vibe feels from all the random pictures you usually send me. Seeing you after a long day, still taking the time to pray, somehow felt really nice to see and it made me feel a little peaceful too",
         },
         12: {
-          date: "[Tanggal foto 12]",
-          desc: "[Cerita foto 12 - isi di sini]",
+          date: "27 May 2026",
+          desc: "This was after Eid prayer, and even though things between us weren’t really okay at that time, you still looked so pretty here. I remember seeing this picture and thinking that no matter what was going on between us, somehow you could still smile like this and look this beautiful. Maybe that’s why I like this picture, because it reminds me that even when things weren’t perfect between us, there were still little moments that I wanted to keep and remember about you",
         },
         13: {
-          date: "[Tanggal foto 13]",
-          desc: "[Cerita foto 13 - isi di sini]",
+          date: "29 May 2026",
+          desc: "This was you on your way home from work, naik Gojek because I couldn’t pick you up that night since I had some shit to deal with. I remember feeling bad because I wanted to be there for you, but at the same time I couldn’t just leave what I had to do. And somehow in the middle of all that, you still sent me this stupidly close picture of your face wkwk. It’s such a random memory, but I like it because it reminds me of those normal days where we were both busy with our own things but still somehow found a way to stay connected with each other",
         },
         14: {
-          date: "[Tanggal foto 14]",
-          desc: "[Cerita foto 14 - isi di sini]",
+          date: "3 June 2026",
+          desc: "This was you during your weekly meeting, and I swear your face looks so damn serious here wkwkwk. You look like you’re already tired of everyone before the meeting even starts, but somehow you still look cute at the same time. I remember seeing this and thinking how funny it is that even with that super jutek face, you still somehow look adorable. I guess this is just one of those random pictures that perfectly captures you being you while you’re busy with your own stuff",
         },
         15: {
-          date: "[Tanggal foto 15]",
-          desc: "[Cerita foto 15 - isi di sini]",
+          date: "3 June 2026",
+          desc: "This was you after your weekly meeting that night, and honestly you really are pretty when you smile wkwk. After seeing your serious face from the meeting earlier, seeing you like this feels so different. I remember thinking that you actually look much sweeter when you smile, so please smile more often because this version of you is definitely my favorite one to see.",
         },
         16: {
-          date: "[Tanggal foto 16]",
-          desc: "[Cerita foto 16 - isi di sini]",
+          date: "4 June 2026",
+          desc: "This was one of those nights when we were supposed to work on our own stuff together, just staying on FaceTime while doing our own things. But you got really tired and ended up falling asleep first. I still remember how funny it was seeing you already knocked out while I was still there, and somehow I ended up taking this picture because I thought it was too cute not to keep. We didn’t even have to talk or do anything that night, just having you there while we both worked already felt nice, even if you ended up sleeping before we could actually finish anything wkwk",
         },
         17: {
-          date: "[Tanggal foto 17]",
-          desc: "[Cerita foto 17 - isi di sini]",
+          date: "5 June 2026",
+          desc: "This was a Friday, and at the end of the week we decided to grab some HokBen together. Nothing too fancy, just a simple meal after a long week, but I really liked moments like this because we could just sit down, eat, talk, and spend some time together without having to do anything complicated. And of course, you had to take a picture looking this cute while I was probably just enjoying my food wkwk",
         },
         18: {
-          date: "[Tanggal foto 18]",
-          desc: "[Cerita foto 18 - isi di sini]",
+          date: "10 June 2026",
+          desc: "This was when I surprised you with flowers, and I still laugh every time I see your face in this picture. I was expecting you to be happy, but this “bahagia” face was definitely not what I had in mind wkwk. You looked so confused and tired at the same time, but honestly that made the moment even funnier and more memorable for me. I just wanted to do something small to make you happy, and somehow this ended up being the picture that captured your reaction perfectly",
         },
         19: {
-          date: "[Tanggal foto 19]",
-          desc: "[Cerita foto 19 - isi di sini]",
+          date: "18 July 2026",
+          desc: "This was us having Sate Padang together, and honestly I don’t even remember what you were so focused on with your phone wkwk. I just remember sitting there with you, eating at a random place like this and enjoying the moment. Nothing fancy, nothing special really, but somehow these simple moments are the ones I like remembering the most because we were just together, eating, talking, and doing our own little things without having to make everything into a big date",
         },
         20: {
-          date: "[Tanggal foto 20]",
-          desc: "[Cerita foto 20 - isi di sini]",
+          date: "28 July 2026",
+          desc: "This was you right after getting scolded, and then you sent me this picture with that tiny little smile. I don’t know what it was about this picture, but you looked insanely pretty here. Even after having a bad moment, somehow you still managed to look this good with the smallest smile ever. I remember looking at this and just thinking damn, how can someone look this cute even after getting scolded wkwk",
         },
         21: {
-          date: "[Tanggal foto 21]",
-          desc: "[Cerita foto 21 - isi di sini]",
+          date: "21 August 2026",
+          desc: "This was you during that competition, and honestly you looked so cute with that little bunny style. I remember seeing this picture and immediately thinking you looked adorable, especially with the bunny ears and that little smile while holding the strawberries. You somehow managed to look really cute even while being busy with the competition, and I really like this picture because it feels like such a random little moment of you being happy and having fun wkwk",
         },
         22: {
-          date: "[Tanggal foto 22]",
-          desc: "[Cerita foto 22 - isi di sini]",
+          date: "27 August 2026",
+          desc: "This was after you surprised me, and then we went to eat Sate Taichan Bengawan together. I remember being so happy that day, and after all the surprise stuff was done we just ended up eating together and enjoying the rest of the day. The only thing I clearly remember after that is how insanely full I was, kenyang brutal anjir wkwk. But honestly, I really liked that day because it wasn’t just about the surprise, it was also about getting to spend more time with you after everything was done and just enjoying a simple meal together",
         },
         23: {
-          date: "[Tanggal foto 23]",
-          desc: "[Cerita foto 23 - isi di sini]",
+          date: "27 August 2026",
+          desc: "This was our first photobox together, and we went with my favorite style as usual. I remember being really happy here because it was one of those moments where we could just be stupid together, laugh as much as we wanted, and take as many weird pictures as possible. I really like this one because we both look so genuinely happy and unserious, exactly how I like spending time with you. Looking back at it now, I think this is one of those pictures that really feels like us and I’m glad our first photobox ended up being this fun",
         },
         24: {
-          date: "[Tanggal foto 24]",
-          desc: "[Cerita foto 24 - isi di sini]",
+          date: "30 August 2026",
+          desc: "This was our first time going to the movies together, although technically this should’ve been our second one, iykyk wkwk. We watched The Odyssey, got some food, and basically spent the whole day together. I really liked that day because it wasn’t just about watching a movie, we actually had the whole day to hang out and do random things together. You even tried one of my favorite games, which honestly made the day even more fun for me. It was one of those days where I didn’t really want the day to end because everything just felt so fun when I was with you",
         },
         25: {
-          date: "[Tanggal foto 25]",
-          desc: "[Cerita foto 25 - isi di sini]",
+          date: "5 September 2026",
+          desc: "This was the first time I came with you to play tennis, and honestly I had a really good time even though I was mostly just there accompanying you wkwk. After that we went to get soto, and damn it was actually so good. I remember being really happy that day because I got to see you do something you enjoy, then we ended the day by eating together. It was another simple day, but I really liked it because I got to spend the whole day with you and be part of one of your little routines for the first time",
         },
       };
 
       function openPhotoModal(index) {
         const data = photoData[index];
-        document.getElementById("modalImg").src = `assets/foto-${index}.jpg`;
+        document.getElementById("modalImg").src = `assets/foto-${index}.jpeg`;
         document.getElementById("modalDate").textContent = data.date;
         document.getElementById("modalDesc").textContent = data.desc;
         document.getElementById("modal").classList.add("active");
