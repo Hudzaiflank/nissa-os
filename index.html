@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>NISA-OS</title>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap");
 
       :root {
         --bg: #0a0612;
@@ -893,6 +893,1102 @@
           bottom: 16px;
         }
       }
+
+      /* ===================== UI SHELL — EXACT FROM SUPPLIED UI ===================== */
+      :root {
+        --outer-bg: #04060a;
+        --bezel-a: #0c2b28;
+        --bezel-b: #0a1f1d;
+        --screen-teal: #0d6b64;
+        --screen-teal-deep: #083f3a;
+        --panel: #f3ede0;
+        --panel-line: #d9cfb8;
+        --ink: #211d16;
+        --ink-dim: #7a725f;
+        --accent: #e8622c;
+      }
+
+      html,
+      body {
+        background: var(--outer-bg);
+        color: var(--panel);
+        font-family: "IBM Plex Mono", monospace;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      #page {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 24px;
+      }
+      #monitor {
+        position: relative;
+        width: min(1180px, 96vw);
+        aspect-ratio: 16 / 8.6;
+        max-height: 90vh;
+        border-radius: 46px;
+        background: radial-gradient(
+          120% 140% at 30% 15%,
+          #143936 0%,
+          var(--bezel-a) 45%,
+          var(--bezel-b) 100%
+        );
+        box-shadow:
+          0 0 0 2px #000,
+          0 30px 70px rgba(0, 0, 0, 0.55),
+          inset 0 0 40px rgba(0, 0, 0, 0.5);
+        padding: 26px;
+      }
+      #monitor::before {
+        content: "";
+        position: absolute;
+        inset: 10px;
+        border-radius: 38px;
+        background: linear-gradient(
+          155deg,
+          rgba(255, 255, 255, 0.08) 0%,
+          rgba(255, 255, 255, 0) 30%
+        );
+        pointer-events: none;
+      }
+      #monitor.fullscreen-mode {
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        padding: 18px;
+      }
+      #monitor.fullscreen-mode::before {
+        border-radius: 0;
+      }
+      #crtScreen {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 26px;
+        overflow: hidden;
+        background: var(--bg);
+        box-shadow:
+          inset 0 0 60px rgba(0, 0, 0, 0.55),
+          inset 0 0 2px rgba(0, 0, 0, 0.8);
+      }
+      #crtOverlay {
+        position: absolute;
+        inset: 0;
+        z-index: 100;
+        pointer-events: none;
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0) 0px,
+            rgba(0, 0, 0, 0) 1px,
+            rgba(0, 0, 0, 0.14) 2px,
+            rgba(0, 0, 0, 0.14) 3px
+          ),
+          radial-gradient(
+            ellipse at center,
+            rgba(0, 0, 0, 0) 55%,
+            rgba(0, 0, 0, 0.55) 100%
+          );
+      }
+
+      /* UI fonts from the supplied UI */
+      /* ===== UI TERMINAL — EXACT VISUAL MODEL, SCOPED TO DESKTOP WINDOW ===== */
+      .ui-terminal-host .term-wrap {
+        display: flex;
+        flex-direction: column;
+        margin: -18px -20px;
+        padding: 16px 20px;
+        background: radial-gradient(
+          circle at 18% 12%,
+          #13202a 0,
+          #080d12 42%,
+          #05070a 100%
+        );
+        height: 400px;
+      }
+      .ui-terminal-host .term-banner {
+        display: inline-flex;
+        gap: 14px;
+        align-items: center;
+        border: 1px solid var(--violet);
+        padding: 8px 14px;
+        margin-bottom: 10px;
+        width: fit-content;
+        border-radius: 4px;
+      }
+      .ui-terminal-host .term-plasma {
+        display: block;
+        width: 130px;
+        height: 60px;
+        border-radius: 2px;
+      }
+      .ui-terminal-host .term-banner-text .l1 {
+        color: var(--gold);
+        font-size: 13px;
+      }
+      .ui-terminal-host .term-banner-text .l2 {
+        color: var(--dim);
+        font-size: 11px;
+      }
+      .ui-terminal-host .term-live-status {
+        color: var(--ok);
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      .ui-terminal-host .term-mode-status {
+        color: var(--violet);
+        font-size: 10.5px;
+        margin-top: 2px;
+      }
+      .ui-terminal-host .term-meta {
+        color: var(--dim);
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+      .ui-terminal-host .term-hint {
+        color: var(--dim);
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+      .ui-terminal-host .term-hint b {
+        color: var(--pink);
+        font-weight: normal;
+      }
+      .ui-terminal-host #screen {
+        flex: 1;
+        overflow-y: auto;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .ui-terminal-host #inputRow,
+      .ui-terminal-host #cmdInput {
+        font-size: 14px;
+      }
+
+      @media (max-width: 640px) {
+        #monitor {
+          border-radius: 26px;
+          padding: 14px;
+          aspect-ratio: 9/15;
+        }
+        #crtScreen {
+          border-radius: 16px;
+        }
+        #desktopIcons {
+          top: 14px;
+          left: 14px;
+          gap: 12px;
+        }
+        .dicon {
+          width: 62px;
+          font-size: 9.5px;
+        }
+        .dicon-box {
+          width: 36px;
+          height: 36px;
+        }
+        .win {
+          left: 8px !important;
+          right: 8px;
+          width: auto !important;
+          top: 8px !important;
+        }
+        .win-body {
+          max-height: 56vh;
+        }
+        .about-grid {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .fx {
+          flex-direction: column;
+        }
+        .fx-side {
+          width: auto;
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+        }
+        .fx-side h4 {
+          display: none;
+        }
+        .anniv-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .cmos-grid,
+        .cmos-sub-grid {
+          grid-template-columns: 1fr;
+        }
+        .bios-hint {
+          left: 16px;
+          bottom: 16px;
+        }
+        #startMenu {
+          width: 200px;
+          left: 8px;
+        }
+        .ui-terminal-host .term-wrap {
+          height: 320px;
+        }
+      }
+
+      /* ===================== DESKTOP STAGE ===================== */
+      #desktopStage.active {
+        display: block;
+      }
+      #desktopStage {
+        background: radial-gradient(
+          120% 90% at 20% 0%,
+          #12857b 0%,
+          var(--screen-teal) 45%,
+          var(--screen-teal-deep) 100%
+        );
+        z-index: 81;
+      }
+      #desktopIcons {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        z-index: 5;
+      }
+      .dicon {
+        width: 78px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: #eefaf6;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.2px;
+      }
+      .dicon-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--panel);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink);
+        box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+      }
+      .dicon:hover .dicon-box {
+        background: #fff;
+      }
+      .dicon:active .dicon-box {
+        transform: translateY(2px);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+      }
+      .dicon span {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        text-align: center;
+      }
+
+      #windowsLayer {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        pointer-events: none;
+      }
+      .win {
+        position: absolute;
+        pointer-events: auto;
+        background: var(--panel);
+        border-radius: 14px;
+        box-shadow:
+          0 22px 46px rgba(0, 0, 0, 0.38),
+          0 0 0 1px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-width: 240px;
+        max-width: 94%;
+      }
+      .win-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 13px;
+        background: #eae2cd;
+        border-bottom: 1px solid var(--panel-line);
+        cursor: grab;
+        font-size: 11.5px;
+        letter-spacing: 0.4px;
+        color: var(--ink-dim);
+        user-select: none;
+      }
+      .win-head b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .win-close {
+        width: 21px;
+        height: 21px;
+        border-radius: 6px;
+        border: none;
+        background: var(--ink);
+        color: #fff;
+        cursor: pointer;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .win-close:hover {
+        background: var(--accent);
+      }
+      .win-body {
+        padding: 18px 20px;
+        overflow: auto;
+        color: var(--ink);
+        font-family: "IBM Plex Mono", monospace;
+        max-height: 62vh;
+      }
+      .win.focused {
+        box-shadow:
+          0 26px 54px rgba(0, 0, 0, 0.5),
+          0 0 0 2px var(--accent);
+      }
+
+      /* --- About window --- */
+      .about-grid {
+        display: flex;
+        gap: 22px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .about-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 16px;
+        flex-shrink: 0;
+        background: linear-gradient(155deg, var(--pink), var(--violet));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-family: "Fraunces", serif;
+        font-size: 34px;
+      }
+      .about-text h1 {
+        font-family: "Fraunces", serif;
+        font-weight: 600;
+        font-size: 23px;
+        line-height: 1.2;
+        margin: 0 0 10px;
+        color: var(--ink);
+        max-width: 380px;
+      }
+      .about-text p {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--ink-dim);
+        max-width: 400px;
+        margin: 0 0 9px;
+      }
+      .about-text .hint-line {
+        font-size: 12.5px;
+        color: var(--accent);
+        margin-top: 10px;
+      }
+
+      /* --- Files explorer --- */
+      .fx {
+        display: flex;
+        margin: -18px -20px;
+        min-height: 300px;
+      }
+      .fx-side {
+        width: 150px;
+        background: #ece4d0;
+        border-right: 1px solid var(--panel-line);
+        padding: 14px 10px;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+      .fx-side h4 {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        color: var(--ink-dim);
+        margin: 12px 0 6px;
+        font-weight: 600;
+      }
+      .fx-side h4:first-child {
+        margin-top: 0;
+      }
+      .fx-item {
+        padding: 6px 8px;
+        border-radius: 6px;
+        color: var(--ink);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        cursor: default;
+      }
+      .fx-item.active {
+        background: #d8cdae;
+      }
+      .fx-main {
+        flex: 1;
+        padding: 14px 18px;
+        overflow: auto;
+      }
+      .fx-row-head {
+        display: flex;
+        font-size: 10px;
+        letter-spacing: 1px;
+        color: var(--ink-dim);
+        border-bottom: 1px solid var(--panel-line);
+        padding-bottom: 7px;
+        margin-bottom: 4px;
+      }
+      .fx-row {
+        display: flex;
+        font-size: 12.5px;
+        padding: 8px 4px;
+        border-bottom: 1px solid #eee3cd;
+        color: var(--ink);
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        border-radius: 6px;
+      }
+      .fx-row:hover {
+        background: #f6f0dd;
+      }
+      .fx-col-name {
+        flex: 1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .fx-col-date {
+        width: 130px;
+        color: var(--ink-dim);
+      }
+      .fx-col-type {
+        width: 90px;
+        color: var(--ink-dim);
+      }
+
+      /* --- Video window --- */
+      .video-wrap {
+        margin: 0;
+      }
+      .video-wrap video {
+        width: 100%;
+        border: 1px solid var(--panel-line);
+        border-radius: 8px;
+        background: #000;
+      }
+      .video-caption {
+        font-size: 12.5px;
+        color: var(--ink-dim);
+        margin-top: 10px;
+      }
+
+      /* --- Letter window --- */
+      .letter-frame {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .section-title-lt {
+        font-family: "Fraunces", serif;
+        font-size: 20px;
+        color: var(--ink);
+        margin: 0;
+      }
+      .letter-body p {
+        font-size: 13.5px;
+        line-height: 1.65;
+        color: var(--ink);
+        margin: 0 0 12px;
+      }
+      .letter-body p:last-child {
+        margin-bottom: 0;
+      }
+      .letter-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid var(--panel-line);
+        padding-top: 10px;
+      }
+      .letter-nav button {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        border: 1px solid var(--panel-line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+      .letter-nav button:hover {
+        background: #ece4d0;
+      }
+      .letter-nav button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .letter-page-indicator {
+        font-size: 11.5px;
+        color: var(--ink-dim);
+      }
+
+      /* --- Photos window --- */
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 8px;
+      }
+      .photo-thumb {
+        aspect-ratio: 1/1;
+        border: 1px solid var(--panel-line);
+        border-radius: 8px;
+        background: #ece4d0;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .photo-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .photo-thumb .idx {
+        position: absolute;
+        bottom: 2px;
+        right: 4px;
+        font-size: 12px;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.7);
+        padding: 0 4px;
+        border-radius: 4px;
+      }
+      .photo-fallback {
+        display: none;
+        font-size: 11px;
+        color: var(--ink-dim);
+        text-align: center;
+        padding: 4px;
+      }
+
+      #modal {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.86);
+        z-index: 95;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        border-radius: 26px;
+      }
+      #modal.active {
+        display: flex;
+      }
+      .modal-inner {
+        max-width: 520px;
+        width: 100%;
+        border: 1px solid var(--violet);
+        background: #0d0716;
+        padding: 18px;
+        max-height: 88%;
+        overflow-y: auto;
+        border-radius: 10px;
+        color: var(--text);
+      }
+      .modal-inner img {
+        width: 100%;
+        display: block;
+        margin-bottom: 14px;
+        border-radius: 6px;
+      }
+      .modal-close {
+        float: right;
+        cursor: pointer;
+        color: var(--dim);
+        border: 1px solid var(--dim);
+        padding: 2px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+      }
+      .modal-close:hover {
+        color: var(--pink);
+        border-color: var(--pink);
+      }
+      .modal-date {
+        color: var(--gold);
+        font-size: 15px;
+        margin-bottom: 6px;
+        clear: both;
+      }
+      .modal-desc {
+        font-size: 15px;
+      }
+
+      /* --- Quiz window --- */
+      .quiz-head {
+        font-size: 12px;
+        color: var(--ink-dim);
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+      .quiz-q {
+        font-family: "Fraunces", serif;
+        font-size: 18px;
+        color: var(--ink);
+        margin-bottom: 12px;
+      }
+      .quiz-opts {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .quiz-opt-btn {
+        text-align: left;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        border: 1px solid var(--panel-line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 9px 12px;
+        cursor: pointer;
+      }
+      .quiz-opt-btn:hover {
+        background: #f6f0dd;
+      }
+      .quiz-opt-btn.picked {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .quiz-opt-btn.correct {
+        background: #3f8f6a;
+        border-color: #3f8f6a;
+        color: #fff;
+      }
+      .quiz-opt-btn.wrong {
+        background: #c0392b;
+        border-color: #c0392b;
+        color: #fff;
+      }
+      .quiz-hint {
+        font-size: 11.5px;
+        color: var(--ink-dim);
+        margin-bottom: 10px;
+      }
+      .quiz-submit {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12.5px;
+        border: none;
+        background: var(--ink);
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 16px;
+        cursor: pointer;
+      }
+      .quiz-submit:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .quiz-verdict {
+        font-size: 13px;
+        margin: 10px 0;
+      }
+      .quiz-verdict.ok {
+        color: #3f8f6a;
+      }
+      .quiz-verdict.bad {
+        color: #c0392b;
+      }
+      .quiz-reward p {
+        font-size: 13.5px;
+        line-height: 1.65;
+        color: var(--ink);
+        margin: 0 0 12px;
+      }
+      .quiz-score {
+        font-family: "Fraunces", serif;
+        font-size: 20px;
+        color: var(--ink);
+        margin-bottom: 10px;
+      }
+
+      /* --- Settings window --- */
+      .set-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--panel-line);
+      }
+      .set-row:last-child {
+        border-bottom: none;
+      }
+      .set-label {
+        font-size: 13px;
+        color: var(--ink);
+      }
+      .set-desc {
+        font-size: 11px;
+        color: var(--ink-dim);
+        margin-top: 2px;
+      }
+      .switch {
+        width: 40px;
+        height: 23px;
+        border-radius: 14px;
+        background: #d9cfb8;
+        position: relative;
+        cursor: pointer;
+        border: none;
+        flex-shrink: 0;
+      }
+      .switch::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 17px;
+        height: 17px;
+        border-radius: 50%;
+        background: #fff;
+        transition: 0.15s;
+      }
+      .switch.on {
+        background: var(--accent);
+      }
+      .switch.on::after {
+        left: 20px;
+      }
+      .btn-plain {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        border: 1px solid var(--panel-line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+      .btn-plain:hover {
+        background: #ece4d0;
+      }
+
+      /* ===================== START MENU ===================== */
+      #startMenu {
+        position: absolute;
+        left: 14px;
+        bottom: 76px;
+        width: 230px;
+        background: var(--panel);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 22px 46px rgba(0, 0, 0, 0.4);
+        z-index: 30;
+        display: none;
+        font-family: "IBM Plex Mono", monospace;
+      }
+      #startMenu.open {
+        display: block;
+      }
+      .sm-clock {
+        padding: 14px 16px 8px;
+      }
+      .sm-clock .time {
+        font-family: "Fraunces", serif;
+        font-size: 23px;
+        color: var(--ink);
+        line-height: 1;
+      }
+      .sm-clock .date {
+        font-size: 10.5px;
+        color: var(--ink-dim);
+        margin-top: 3px;
+      }
+      .sm-sec {
+        font-size: 9.5px;
+        letter-spacing: 1.5px;
+        color: var(--ink-dim);
+        padding: 8px 16px 4px;
+      }
+      .sm-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 16px;
+        font-size: 12px;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .sm-item:hover {
+        background: #ece4d0;
+      }
+      .sm-item svg {
+        flex-shrink: 0;
+      }
+      .sm-divider {
+        height: 1px;
+        background: var(--panel-line);
+        margin: 5px 0;
+      }
+
+      /* ===================== TASKBAR ===================== */
+      #taskbar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 62px;
+        background: var(--panel);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        z-index: 25;
+        box-shadow: 0 -1px 0 var(--panel-line);
+      }
+      .tb-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: none;
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .tb-btn:hover {
+        background: #ece4d0;
+      }
+      .tb-btn.active {
+        background: #dcd0b0;
+      }
+      .tb-btn .dot {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--accent);
+        opacity: 0;
+        transition: 0.15s;
+      }
+      .tb-btn.running .dot {
+        opacity: 1;
+      }
+      .tb-sep {
+        width: 1px;
+        height: 26px;
+        background: var(--panel-line);
+        margin: 0 6px;
+      }
+      #tb-clock {
+        font-size: 11px;
+        color: var(--ink-dim);
+        margin-left: 8px;
+        min-width: 50px;
+      }
+
+      /* ===================== POWER OFF ===================== */
+      #powerOff {
+        position: absolute;
+        inset: 0;
+        background: #000;
+        z-index: 92;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: #5a5a5a;
+        font-size: 11px;
+        letter-spacing: 2px;
+        cursor: pointer;
+        border-radius: 26px;
+      }
+      #powerOff.active {
+        display: flex;
+      }
+
+      .hint {
+        font-size: 11.5px;
+        color: #6b7570;
+        letter-spacing: 0.5px;
+      }
+      .hint u {
+        color: #9fdcc9;
+      }
+
+      @media (max-width: 640px) {
+        #monitor {
+          border-radius: 26px;
+          padding: 14px;
+          aspect-ratio: 9/15;
+        }
+        #crtScreen {
+          border-radius: 16px;
+        }
+        #desktopIcons {
+          top: 14px;
+          left: 14px;
+          gap: 12px;
+        }
+        .dicon {
+          width: 62px;
+          font-size: 9.5px;
+        }
+        .dicon-box {
+          width: 36px;
+          height: 36px;
+        }
+        .win {
+          left: 8px !important;
+          right: 8px;
+          width: auto !important;
+          top: 8px !important;
+        }
+        .win-body {
+          max-height: 56vh;
+        }
+        .about-grid {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .fx {
+          flex-direction: column;
+        }
+        .fx-side {
+          width: auto;
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+        }
+        .fx-side h4 {
+          display: none;
+        }
+        .anniv-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .cmos-grid,
+        .cmos-sub-grid {
+          grid-template-columns: 1fr;
+        }
+        .bios-hint {
+          left: 16px;
+          bottom: 16px;
+        }
+        #startMenu {
+          width: 200px;
+          left: 8px;
+        }
+        .term-wrap {
+          height: 320px;
+        }
+      }
+      /* ===== UI TERMINAL: KEEP BASE TERMINAL TEXT APPEARANCE ===== */
+      .ui-terminal-host #screen,
+      .ui-terminal-host #screen .line {
+        color: var(--text);
+      }
+      .ui-terminal-host #cmdInput {
+        color: var(--text);
+        caret-color: var(--pink);
+      }
+      #termStage[hidden] {
+        display: none !important;
+      }
+
+      /* ===== UI TERMINAL WINDOW BRIDGE ===== */
+      #termStage.term-window-mode {
+        position: static;
+        inset: auto;
+        width: 100%;
+        height: 400px;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        background: radial-gradient(
+          circle at 18% 12%,
+          #13202a 0,
+          #080d12 42%,
+          #05070a 100%
+        );
+        overflow: hidden;
+      }
+      #termStage.term-window-mode .term-banner {
+        padding: 8px 14px;
+        margin-bottom: 10px;
+        gap: 14px;
+      }
+      #termStage.term-window-mode .term-plasma {
+        width: 130px;
+        height: 60px;
+      }
+      #termStage.term-window-mode .term-banner-text .l1 {
+        font-size: 13px;
+      }
+      #termStage.term-window-mode .term-banner-text .l2 {
+        font-size: 11px;
+      }
+      #termStage.term-window-mode .term-live-status {
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      #termStage.term-window-mode .term-mode-status {
+        font-size: 10.5px;
+      }
+      #termStage.term-window-mode .term-meta {
+        font-size: 12px;
+      }
+      #termStage.term-window-mode .term-hint {
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+      #termStage.term-window-mode #screen {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      #termStage.term-window-mode #inputRow {
+        font-size: 14px;
+      }
+      #termStage.term-window-mode #cmdInput {
+        font-size: 14px;
+      }
+      .ui-terminal-host .win-body {
+        padding: 0;
+        overflow: hidden;
+      }
     </style>
   </head>
   <body>
@@ -1015,6 +2111,347 @@
       </div>
     </div>
 
+    <!-- DESKTOP UI (from supplied UI model) -->
+    <div id="desktopStage" class="stage">
+      <div id="desktopIcons">
+        <button class="dicon" data-open="terminal">
+          <span class="dicon-box"
+            ><svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <path d="m7 9 3 3-3 3M13 15h4" /></svg
+          ></span>
+          <span>Terminal</span>
+        </button>
+        <button class="dicon" data-open="letter">
+          <span class="dicon-box"
+            ><svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="m4 6 8 6 8-6" /></svg
+          ></span>
+          <span>Letter</span>
+        </button>
+        <button class="dicon" data-open="photos">
+          <span class="dicon-box"
+            ><svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <circle cx="8.5" cy="9.5" r="1.6" />
+              <path d="m4 17 5-5 4 4 3-3 4 4" /></svg
+          ></span>
+          <span>Photos</span>
+        </button>
+        <button class="dicon" data-open="files">
+          <span class="dicon-box"
+            ><svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"
+              /></svg
+          ></span>
+          <span>Files</span>
+        </button>
+      </div>
+
+      <div id="windowsLayer"></div>
+
+      <div id="startMenu">
+        <div class="sm-clock">
+          <div class="time" id="sm-time">--:--</div>
+          <div class="date" id="sm-date">-</div>
+        </div>
+        <div class="sm-divider"></div>
+        <div class="sm-sec">APPS</div>
+        <div class="sm-item" data-open="files">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"
+            /></svg
+          >Files
+        </div>
+        <div class="sm-item" data-open="letter">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m4 6 8 6 8-6" /></svg
+          >Letter
+        </div>
+        <div class="sm-item" data-open="photos">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <circle cx="8.5" cy="9.5" r="1.6" />
+            <path d="m4 17 5-5 4 4 3-3 4 4" /></svg
+          >Photos
+        </div>
+        <div class="sm-item" data-open="video">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M10 9.5v5l4-2.5-4-2.5Z" /></svg
+          >Video
+        </div>
+        <div class="sm-item" data-open="quiz">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9.5 9.2a2.5 2.5 0 1 1 3.5 2.3c-.9.5-1 1-1 1.8" />
+            <path d="M12 17h.01" /></svg
+          >Quiz
+        </div>
+        <div class="sm-item" data-open="about">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="8" r="3.4" />
+            <path d="M5 20c0-3.6 3.1-6.4 7-6.4s7 2.8 7 6.4" /></svg
+          >About
+        </div>
+        <div class="sm-divider"></div>
+        <div class="sm-sec">SYSTEM</div>
+        <div class="sm-item" data-open="settings">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M4 13h3M17 13h3M12 4v3M12 17v3M6.5 6.5l2 2M15.5 15.5l2 2M17.5 6.5l-2 2M8.5 15.5l-2 2"
+            /></svg
+          >Settings
+        </div>
+        <div class="sm-item" id="sm-lock">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="5" y="11" width="14" height="9" rx="2" />
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg
+          >Lock
+        </div>
+        <div class="sm-item" id="sm-restart">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 12a9 9 0 1 1 3 6.7" />
+            <path d="M3 17v-4h4" /></svg
+          >Restart
+        </div>
+        <div class="sm-item" id="sm-shutdown">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 3v8" />
+            <path d="M6.5 6.5a8 8 0 1 0 11 0" /></svg
+          >Shutdown
+        </div>
+      </div>
+
+      <div id="taskbar">
+        <button class="tb-btn" id="tb-start" title="Start">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          >
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" data-open="files" title="Files">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"
+            /></svg
+          ><span class="dot"></span>
+        </button>
+        <button class="tb-btn" data-open="about" title="About">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="8" r="3.4" />
+            <path d="M5 20c0-3.6 3.1-6.4 7-6.4s7 2.8 7 6.4" /></svg
+          ><span class="dot"></span>
+        </button>
+        <button class="tb-btn" data-open="letter" title="Letter">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m4 6 8 6 8-6" /></svg
+          ><span class="dot"></span>
+        </button>
+        <button class="tb-btn" data-open="terminal" title="Terminal">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="m7 9 3 3-3 3M13 15h4" /></svg
+          ><span class="dot"></span>
+        </button>
+        <button class="tb-btn" data-open="settings" title="Settings">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M4 13h3M17 13h3M12 4v3M12 17v3M6.5 6.5l2 2M15.5 15.5l2 2M17.5 6.5l-2 2M8.5 15.5l-2 2"
+            /></svg
+          ><span class="dot"></span>
+        </button>
+        <div id="tb-clock">--:--</div>
+      </div>
+      <div id="powerOff">CLICK TO TURN ON</div>
+    </div>
+
     <!-- TERMINAL -->
     <div id="termStage" class="stage">
       <div class="term-banner">
@@ -1055,7 +2492,7 @@
 
     <script>
       /* ============ CONFIG ============ */
-      const PIN = "10092026";
+      const PIN = "10052026";
       const ANNIV_DATE = new Date(2026, 4, 10); // 10 Mei 2026
       const USER_NAME = "Hudzaifah";
       const PARTNER_FULL_NAME = "Anisa Dwiasmara Edi Prabowo";
@@ -1729,8 +3166,14 @@
       const pinBox = document.querySelector(".pin-box");
       const lockInput = document.getElementById("lockInput");
       const lockError = document.getElementById("lockError");
+      const lockStage = document.getElementById("lockStage");
       const lockDots = document.querySelectorAll("#lockDots .pin-dot");
       let pinValue = "";
+      // Where the next successful boot/unlock should land.
+      // Normal boot/F12 terminal flow stays terminal; UI restart/shutdown
+      // boots back into the desktop UI after the PIN.
+      let bootReturnStage = "terminal";
+      let lockReturnStage = "terminal";
 
       function showPinStage() {
         showStage("pinStage", "pin");
@@ -1775,7 +3218,14 @@
           beepSuccess();
           pinError.style.color = "var(--ok)";
           pinError.textContent = "ACCESS GRANTED";
-          setTimeout(enterTerminal, 600);
+          setTimeout(() => {
+            if (bootReturnStage === "desktop") {
+              enterDesktopUi();
+              bootReturnStage = "terminal";
+            } else {
+              enterTerminal();
+            }
+          }, 600);
         } else {
           beepError();
           pinError.style.color = "var(--danger)";
@@ -1803,10 +3253,15 @@
       function unlockTerminal() {
         lockInput.value = "";
         lockError.textContent = "";
-        showStage("termStage", "terminal");
-        resizeTermPlasma();
-        updateTermLiveStatus();
-        cmdInput.focus();
+        lockStage.classList.remove("active");
+
+        if (lockReturnStage === "desktop") {
+          lockReturnStage = "terminal";
+          enterDesktopUi();
+          return;
+        }
+
+        enterTerminal();
       }
 
       lockInput.addEventListener("input", () => {
@@ -2181,22 +3636,22 @@
             <div class="section-title">THE FIRST OF ALL THINGS</div>
             <div class="letter">
               <p>Dear Nisa,</p>
-              <p>Aku nggak pernah pintar merangkai kata, tapi malam ini aku coba, karena kamu pantas dapat lebih dari sekadar ucapan singkat.</p>
-              <p>Empat bulan bukan waktu yang panjang kalau dibandingkan dengan rencana-rencana yang aku susun diam-diam soal kita ke depannya.</p>
+              <p>I have never really been good at putting my feelings into words, but tonight I wanted to try, because you deserve more than just a simple message.</p>
+              <p>Four months might not sound like a long time, but when I think about everything we have already been through and all the little moments we have shared, it somehow feels like there is already so much to remember. And honestly, it makes me excited for all the things that are still waiting for us ahead.</p>
             </div>
           `,
         `
             <div class="section-title">THE MEMORY</div>
             <div class="letter">
-              <p>Buatku, empat bulan ini cukup untuk aku sadar satu hal: aku suka caramu [isi kenangan spesifik di sini].</p>
-              <p>Aku masih ingat [ceritakan momen pertama kalian bertemu atau jadian di sini]. Sejak itu, hari-hariku jadi punya alasan buat ditunggu.</p>
+              <p>These past four months have given me so many little reasons to smile. From our first FaceTime, our first time holding hands, our first proper date at NuArt, to all the random pictures, late night calls, meals, and stupid moments we somehow always manage to have.</p>
+              <p>I still remember the little things, like when you came to my graduation even though I thought you wouldn’t, when we stayed on FaceTime while doing our own work until you fell asleep, and all the simple days where we were just together without really doing anything special. Maybe they seem small, but those are the moments I end up remembering the most.</p>
             </div>
           `,
         `
             <div class="section-title">THE PROMISE</div>
             <div class="letter">
-              <p>Terima kasih sudah sabar sama aku, sudah mau dengerin cerita-cerita nggak penting, dan sudah tetap ada meskipun kadang aku nggak sempurna.</p>
-              <p>Selamat empat bulan, Nisa. Ini baru permulaan.</p>
+              <p>Thank you for being patient with me, for listening to all my random stories, for being there through the good days and the not so good ones, and for letting me be a part of your life. I know I am far from perfect, and I know there will always be things we have to learn about each other, but I want to keep learning them with you.</p>
+              <p>Happy four months, Nisa. We have already made so many memories together, and I hope this is only the beginning of many more. I don't know exactly what the future will look like, but I know I want to keep making memories with you along the way.</p>
               <p style="text-align:right;">— Hudzaifah</p>
             </div>
           `,
@@ -3196,13 +4651,13 @@
           if (document.getElementById("modal").classList.contains("active")) {
             closeModal();
           } else if (inputMode === "sudoPassword") {
-            printLine(PROMPT_TEXT + "^C", "dim");
+            printLine(PROMPT_TEXT + "^C");
             cmdInput.value = "";
             cmdInput.style.color = "";
             cmdInput.style.caretColor = "";
             inputMode = "command";
           } else {
-            printLine(PROMPT_TEXT + cmdInput.value + "^C", "dim");
+            printLine(PROMPT_TEXT + cmdInput.value + "^C");
             cmdInput.value = "";
             inputMode = "command";
           }
@@ -3213,7 +4668,7 @@
           const raw = cmdInput.value.trim();
           const wasCommandMode = inputMode === "command";
           if (inputMode !== "sudoPassword") {
-            printLine(PROMPT_TEXT + raw, "dim");
+            printLine(PROMPT_TEXT + raw);
           }
           cmdInput.value = "";
 
@@ -3408,6 +4863,10 @@
         }
 
         if (CURRENT_STAGE === "terminal") {
+          if (e.key === "F11" || e.code === "F11" || e.keyCode === 122) {
+            e.preventDefault();
+            return; // UI bridge capture handler performs the actual toggle.
+          }
           if (e.key === "F12") {
             e.preventDefault();
             beepEsc();
@@ -3443,6 +4902,668 @@
         // 'pin' stage: all keystrokes are handled by the hidden #pinHidden input itself.
         // 'terminal' stage: handled by the #cmdInput listener above.
       });
+
+      /* ============ DESKTOP UI BRIDGE ============ */
+      const desktopStage = document.getElementById("desktopStage");
+      const windowsLayer = document.getElementById("windowsLayer");
+      const startMenu = document.getElementById("startMenu");
+      const tbStart = document.getElementById("tb-start");
+      const powerOff = document.getElementById("powerOff");
+      const openWindows = {};
+      let zTop = 10;
+      let winOffset = 0;
+
+      function updateDesktopClock() {
+        const now = new Date();
+        const t =
+          String(now.getHours()).padStart(2, "0") +
+          ":" +
+          String(now.getMinutes()).padStart(2, "0");
+        const tbClock = document.getElementById("tb-clock");
+        const smTime = document.getElementById("sm-time");
+        const smDate = document.getElementById("sm-date");
+        if (tbClock) tbClock.textContent = t;
+        if (smTime) smTime.textContent = t;
+        if (smDate)
+          smDate.textContent = now.toLocaleDateString("id-ID", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+          });
+      }
+      setInterval(updateDesktopClock, 1000);
+
+      function bringToFront(el) {
+        zTop++;
+        el.style.zIndex = zTop;
+        document
+          .querySelectorAll("#windowsLayer .win")
+          .forEach((w) => w.classList.remove("focused"));
+        el.classList.add("focused");
+      }
+
+      function setTaskbarState(id, running) {
+        document.querySelectorAll(`[data-open="${id}"]`).forEach((btn) => {
+          if (btn.classList.contains("tb-btn"))
+            btn.classList.toggle("running", running);
+        });
+      }
+
+      function closeStartMenu() {
+        if (startMenu) startMenu.classList.remove("open");
+        if (tbStart) tbStart.classList.remove("active");
+      }
+
+      function closeUiWindow(id) {
+        const win = openWindows[id];
+        if (!win) return;
+        if (id === "terminal") {
+          // The terminal is the real base terminal DOM. Detach it from the
+          // window first, then hide it explicitly so it can never remain
+          // visible behind the desktop after closing the window.
+          termStage.classList.remove("active", "term-window-mode");
+          termStage.hidden = true;
+          termStage.style.display = "none";
+          termStage.style.position = "";
+          // The base code has no crtScreen wrapper. Keep the real terminal
+          // stage as a direct child of body when it is not being shown.
+          if (termStage.parentElement !== document.body) {
+            document.body.appendChild(termStage);
+          }
+        }
+        win.remove();
+        delete openWindows[id];
+        setTaskbarState(id, false);
+      }
+
+      function closeAllUiWindows() {
+        Object.keys(openWindows).forEach(closeUiWindow);
+        closeStartMenu();
+      }
+
+      function openTerminalUiWindow() {
+        closeStartMenu();
+        if (openWindows.terminal) {
+          bringToFront(openWindows.terminal);
+          cmdInput.focus();
+          return;
+        }
+
+        const win = document.createElement("div");
+        win.className = "win ui-terminal-host";
+        win.style.width = "760px";
+        win.style.maxWidth = "94%";
+        win.style.left = "40px";
+        win.style.top = "24px";
+        win.innerHTML = `
+          <div class="win-head" data-drag>
+            <div><b>Terminal — /home/hudzaifah(nisa)</b></div>
+            <button class="win-close" data-close>×</button>
+          </div>
+          <div class="win-body"></div>
+        `;
+        windowsLayer.appendChild(win);
+        openWindows.terminal = win;
+        win.querySelector(".win-body").appendChild(termStage);
+        termStage.hidden = false;
+        termStage.classList.add("active", "term-window-mode");
+        termStage.style.display = "flex";
+        termStage.style.position = "static";
+        setTaskbarState("terminal", true);
+        bringToFront(win);
+        win
+          .querySelector("[data-close]")
+          .addEventListener("click", () => closeUiWindow("terminal"));
+        win.addEventListener("mousedown", () => bringToFront(win));
+        makeUiDraggable(win, win.querySelector("[data-drag]"));
+        resizeTermPlasma();
+        updateTermLiveStatus();
+        cmdInput.focus();
+      }
+
+      function startQuizInUi(win) {
+        // Same quiz data/state as the original terminal engine, but rendered
+        // as a desktop window instead of forcing the user back to Terminal.
+        markFound("command:quiz");
+        quizState = {
+          index: 0,
+          correctCount: 0,
+          questions: shuffleQuizQuestions(),
+        };
+
+        const host = win.querySelector("#uiQuizApp");
+        if (!host) return;
+
+        function renderQuestion() {
+          const q = quizState.questions[quizState.index];
+          const instruction =
+            q.type === "single"
+              ? "Pilih satu jawaban."
+              : `Pilih tepat ${q.pick} jawaban.`;
+          const options = q.options
+            .map(
+              (opt, i) => `
+            <button class="quiz-opt-btn" data-index="${i}">
+              ${String.fromCharCode(65 + i)}) ${opt}
+            </button>`,
+            )
+            .join("");
+
+          host.innerHTML = `
+            <div class="quiz-head">NISA QUIZ · ${quizState.index + 1}/${quizState.questions.length}</div>
+            <div class="quiz-q">${q.q}</div>
+            <div class="quiz-hint">${instruction}</div>
+            <div class="quiz-opts">${options}</div>
+            <div class="quiz-verdict" id="uiQuizVerdict"></div>
+          `;
+
+          host.querySelectorAll(".quiz-opt-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const picked = Number(btn.dataset.index);
+              const pickedSet = new Set([picked]);
+              if (q.type === "multi") {
+                btn.classList.toggle("picked");
+                const selected = [
+                  ...host.querySelectorAll(".quiz-opt-btn.picked"),
+                ].map((b) => Number(b.dataset.index));
+                if (selected.length === q.pick) {
+                  submitUiQuiz(selected);
+                }
+                return;
+              }
+              submitUiQuiz([...pickedSet]);
+            });
+          });
+        }
+
+        function submitUiQuiz(indices) {
+          const q = quizState.questions[quizState.index];
+          const sortedAns = [...indices].sort((a, b) => a - b);
+          const sortedCorrect = [...q.correct].sort((a, b) => a - b);
+          const isCorrect =
+            sortedAns.length === sortedCorrect.length &&
+            sortedAns.every((v, i) => v === sortedCorrect[i]);
+
+          host
+            .querySelectorAll(".quiz-opt-btn")
+            .forEach((btn) => (btn.disabled = true));
+          const verdict = host.querySelector("#uiQuizVerdict");
+          if (isCorrect) {
+            quizState.correctCount++;
+            verdict.textContent = "Benar";
+            verdict.className = "quiz-verdict ok";
+          } else {
+            verdict.textContent = "Kurang tepat, tapi lanjut aja dulu.";
+            verdict.className = "quiz-verdict bad";
+          }
+
+          setTimeout(() => {
+            quizState.index++;
+            if (quizState.index < quizState.questions.length) {
+              renderQuestion();
+            } else {
+              finishUiQuiz();
+            }
+          }, 650);
+        }
+
+        function finishUiQuiz() {
+          if (quizState.correctCount === quizState.questions.length) {
+            beepSuccess();
+            host.innerHTML = `
+              <div class="quiz-head">YOU PASSED THE QUIZ</div>
+              <div class="quiz-score">Skor kamu: ${quizState.correctCount}/${quizState.questions.length}</div>
+              <div class="quiz-reward">
+                <p>okay wait, you actually got everything right?? i'm a little scared now, are you secretly reading my diary or something lol.</p>
+                <p>anyway since you clearly know everything about me (and clearly pay way too much attention, which... i kinda love), here's your prize: my honest, unfiltered feelings, no cap.</p>
+                <p>these 4 months with you have genuinely been one of the best decisions i never had to think twice about. you're somehow the easiest person to love and still keep me on my toes at the same time, i did not think that combo was possible until you.</p>
+                <p>so yeah. quiz champion, memory keeper, my favorite person, all in one. happy 4 months, sayang. i'm not going anywhere.</p>
+                <p style="text-align:right;">— hudz</p>
+              </div>`;
+          } else {
+            host.innerHTML = `
+              <div class="quiz-head">QUIZ SELESAI</div>
+              <div class="quiz-score">Skor kamu: ${quizState.correctCount}/${quizState.questions.length}</div>
+              <div class="quiz-verdict bad">Belum sempurna nih, coba lagi kapan-kapan ya.</div>
+              <button class="quiz-submit" id="uiQuizRetry">Try Again</button>`;
+            host.querySelector("#uiQuizRetry").onclick = () =>
+              startQuizInUi(win);
+          }
+        }
+
+        renderQuestion();
+      }
+
+      function openUiApp(id) {
+        if (id === "terminal") return openTerminalUiWindow();
+        closeStartMenu();
+        if (openWindows[id]) {
+          bringToFront(openWindows[id]);
+          return;
+        }
+
+        const defs = {
+          about: {
+            title: "About Nisa",
+            width: 500,
+            body: () => `
+              <div class="about-grid">
+                <div class="about-avatar">:)</div>
+                <div class="about-text">
+                  <h1>My favorite person in this system.</h1>
+                  <p><b>${PARTNER_FULL_NAME}</b> — dikenal di sistem ini sebagai <b>${PARTNER_NAME}</b>. Access level: seluruh hatiku.</p>
+                  <p>Empat bulan dan terus bertambah. Sistem ini dibuat khusus untuk merayakan itu — jelajahi tiap sudutnya, karena semuanya ditaruh di sini dengan sengaja.</p>
+                  <p class="hint-line">Ketik <b>whoami</b> di Terminal untuk profil identitas lengkap.</p>
+                </div>
+              </div>`,
+          },
+          files: {
+            title: "Files",
+            width: 560,
+            body: () => `
+              <div class="fx">
+                <div class="fx-side">
+                  <h4>PLACES</h4><div class="fx-item active">🏠 Home</div>
+                  <h4>DEVICES</h4><div class="fx-item">💾 MEMORIES</div><div class="fx-item">💾 FEELINGS</div>
+                </div>
+                <div class="fx-main">
+                  <div class="fx-row-head"><div class="fx-col-name">Name</div><div class="fx-col-date">Modified</div><div class="fx-col-type">Type</div></div>
+                  <div class="fx-row" data-open-app="letter"><div class="fx-col-name">💌 letter.txt</div><div class="fx-col-date">10 Sep 2026</div><div class="fx-col-type">Letter</div></div>
+                  <div class="fx-row" data-open-app="photos"><div class="fx-col-name">📁 photos (${PHOTO_COUNT})</div><div class="fx-col-date">Ongoing</div><div class="fx-col-type">Folder</div></div>
+                  <div class="fx-row" data-open-app="video"><div class="fx-col-name">🎬 video-1</div><div class="fx-col-date">10 Sep 2026</div><div class="fx-col-type">Video</div></div>
+                  <div class="fx-row" data-open-app="quiz"><div class="fx-col-name">❔ quiz.exe</div><div class="fx-col-date">Anytime</div><div class="fx-col-type">Program</div></div>
+                  <div class="fx-row" data-open-app="terminal"><div class="fx-col-name">&gt;_ terminal</div><div class="fx-col-date">Always on</div><div class="fx-col-type">System</div></div>
+                </div>
+              </div>`,
+            init: (win) =>
+              win
+                .querySelectorAll("[data-open-app]")
+                .forEach((row) =>
+                  row.addEventListener("click", () =>
+                    openUiApp(row.dataset.openApp),
+                  ),
+                ),
+          },
+          video: {
+            title: "video-1",
+            width: 520,
+            body: () => `
+              <div class="video-wrap">
+                <iframe width="100%" height="300"
+                  src="https://www.youtube.com/embed/J9utdP5LCpE?start=280&autoplay=1&mute=1&rel=0"
+                  title="Video Penjelasan Make Time" frameborder="0"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                  allowfullscreen></iframe>
+              </div>`,
+            init: () => {
+              if (markFound("video:1")) beepSuccess();
+            },
+          },
+          letter: {
+            title: "letter.txt",
+            width: 520,
+            body: () => `<div class="letter-frame"><div id="uiLetterHost"></div>
+              <div class="letter-nav">
+                <button class="btn-plain" id="uiLetterPrev">&larr; prev</button>
+                <span class="letter-page-indicator" id="uiLetterIndicator"></span>
+                <button class="btn-plain" id="uiLetterNext">next &rarr;</button>
+              </div></div>`,
+            init: (win) => {
+              let idx = 0;
+              const host = win.querySelector("#uiLetterHost");
+              const indicator = win.querySelector("#uiLetterIndicator");
+              const prev = win.querySelector("#uiLetterPrev");
+              const next = win.querySelector("#uiLetterNext");
+              function render() {
+                host.innerHTML = letterPages[idx];
+                indicator.textContent = `PAGE ${idx + 1}/${letterPages.length}`;
+                prev.disabled = idx === 0;
+                next.disabled = idx === letterPages.length - 1;
+              }
+              prev.onclick = () => {
+                if (idx > 0) {
+                  idx--;
+                  render();
+                  beepClick();
+                }
+              };
+              next.onclick = () => {
+                if (idx < letterPages.length - 1) {
+                  idx++;
+                  render();
+                  beepClick();
+                }
+              };
+              render();
+              markFound("command:letter");
+            },
+          },
+          photos: {
+            title: "Photos",
+            width: 600,
+            body: () => `<div class="photo-grid" id="uiPhotoGrid"></div>`,
+            init: (win) => {
+              const host = win.querySelector("#uiPhotoGrid");
+              host.innerHTML = Array.from({ length: PHOTO_COUNT }, (_, n) => {
+                const i = n + 1;
+                return `<div class="photo-thumb" data-index="${i}">
+                  <img src="assets/foto-${i}.jpeg" alt="foto ${i}" loading="lazy"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                  <div class="photo-fallback">foto-${i}<br>belum ada</div><span class="idx">${i}</span>
+                </div>`;
+              }).join("");
+              host
+                .querySelectorAll(".photo-thumb")
+                .forEach((t) =>
+                  t.addEventListener("click", () =>
+                    openPhotoModal(t.dataset.index),
+                  ),
+                );
+            },
+          },
+          quiz: {
+            title: "quiz.exe",
+            width: 560,
+            body: () => `<div id="uiQuizApp" class="ui-quiz-app"></div>`,
+            init: (win) => startQuizInUi(win),
+          },
+          settings: {
+            title: "Settings",
+            width: 420,
+            body: () => `
+              <div class="set-row"><div><div class="set-label">Scanline effect</div><div class="set-desc">Efek garis CRT di layar</div></div>
+                <button class="switch on" data-toggle="crt"></button></div>
+              <div class="set-row"><div><div class="set-label">Sound</div><div class="set-desc">Bunyi klik antarmuka</div></div>
+                <button class="switch on" data-toggle="sound"></button></div>
+              <div class="set-row"><div><div class="set-label">Return to Terminal</div><div class="set-desc">Kembali ke mode terminal fullscreen</div></div>
+                <button class="btn-plain" id="settings-terminal-btn">Open</button></div>
+              <div class="set-row"><div><div class="set-label">Reset exploration progress</div><div class="set-desc">Menghapus semua progress lokal</div></div>
+                <button class="btn-plain" id="settings-reset-btn">Reset</button></div>`,
+            init: (win) => {
+              win.querySelectorAll("[data-toggle]").forEach(
+                (btn) =>
+                  (btn.onclick = () => {
+                    btn.classList.toggle("on");
+                    if (btn.dataset.toggle === "crt") {
+                      document.getElementById("crtOverlay").style.display =
+                        btn.classList.contains("on") ? "block" : "none";
+                    } else if (btn.dataset.toggle === "sound") {
+                      SOUND_ON = btn.classList.contains("on");
+                    }
+                  }),
+              );
+              win.querySelector("#settings-terminal-btn").onclick = () => {
+                enterTerminalFullscreenUi();
+              };
+              win.querySelector("#settings-reset-btn").onclick = () => {
+                if (
+                  confirm(
+                    "Hapus semua progress eksplorasi lokal? Ini tidak bisa dibatalkan.",
+                  )
+                ) {
+                  foundItems = [];
+                  saveProgress(foundItems);
+                  beepError();
+                  updateTermLiveStatus();
+                }
+              };
+            },
+          },
+        };
+
+        const def = defs[id];
+        if (!def) return;
+        const win = document.createElement("div");
+        win.className = "win";
+        win.style.width = def.width + "px";
+        winOffset = (winOffset + 26) % 130;
+        win.style.left = 40 + winOffset + "px";
+        win.style.top = 24 + winOffset + "px";
+        win.innerHTML = `<div class="win-head" data-drag><div><b>${def.title}</b></div><button class="win-close" data-close>×</button></div>
+                         <div class="win-body">${def.body()}</div>`;
+        windowsLayer.appendChild(win);
+        openWindows[id] = win;
+        setTaskbarState(id, true);
+        bringToFront(win);
+        win.querySelector("[data-close]").onclick = () => closeUiWindow(id);
+        win.addEventListener("mousedown", () => bringToFront(win));
+        makeUiDraggable(win, win.querySelector("[data-drag]"));
+        if (def.init) def.init(win);
+      }
+
+      function makeUiDraggable(win, handle) {
+        let dragging = false,
+          sx = 0,
+          sy = 0,
+          ox = 0,
+          oy = 0;
+        handle.addEventListener("mousedown", (e) => {
+          dragging = true;
+          sx = e.clientX;
+          sy = e.clientY;
+          ox = win.offsetLeft;
+          oy = win.offsetTop;
+          handle.style.cursor = "grabbing";
+          e.preventDefault();
+        });
+        window.addEventListener("mousemove", (e) => {
+          if (!dragging) return;
+          win.style.left = ox + e.clientX - sx + "px";
+          win.style.top = oy + e.clientY - sy + "px";
+        });
+        window.addEventListener("mouseup", () => {
+          dragging = false;
+          handle.style.cursor = "grab";
+        });
+        handle.addEventListener(
+          "touchstart",
+          (e) => {
+            const t = e.touches[0];
+            dragging = true;
+            sx = t.clientX;
+            sy = t.clientY;
+            ox = win.offsetLeft;
+            oy = win.offsetTop;
+          },
+          { passive: true },
+        );
+        window.addEventListener(
+          "touchmove",
+          (e) => {
+            if (!dragging) return;
+            const t = e.touches[0];
+            win.style.left = ox + t.clientX - sx + "px";
+            win.style.top = oy + t.clientY - sy + "px";
+          },
+          { passive: true },
+        );
+        window.addEventListener("touchend", () => {
+          dragging = false;
+        });
+      }
+
+      // Delegate app clicks so Start-menu items, desktop icons, and taskbar
+      // buttons all use the same reliable handler.
+      desktopStage?.addEventListener("click", (e) => {
+        const target = e.target.closest("[data-open]");
+        if (!target || !desktopStage.contains(target)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openUiApp(target.getAttribute("data-open"));
+      });
+
+      tbStart?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        startMenu.classList.toggle("open");
+        tbStart.classList.toggle("active");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (
+          CURRENT_STAGE === "desktop" &&
+          startMenu &&
+          !startMenu.contains(e.target) &&
+          e.target !== tbStart
+        )
+          closeStartMenu();
+      });
+
+      document.getElementById("sm-shutdown")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        shutdownFromUi();
+      });
+      powerOff?.addEventListener("click", () =>
+        powerOff.classList.remove("active"),
+      );
+
+      document.getElementById("sm-restart")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        restartFromUi();
+      });
+      document.getElementById("sm-lock")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showLock();
+      });
+
+      // UI Lock: return to the same PIN screen used by the original terminal.
+      // Unlike the old bridge, this explicitly changes CURRENT_STAGE so the
+      // lock screen is no longer treated as Desktop.
+      function showLock() {
+        closeAllUiWindows();
+        closeStartMenu();
+        termStage.classList.remove("active", "term-window-mode");
+        termStage.hidden = true;
+        termStage.style.display = "none";
+        termStage.style.position = "";
+        lockReturnStage = "desktop";
+        showStage("lockStage", "lock");
+        lockInput.value = "";
+        lockError.textContent = "";
+        lockDots.forEach((dot) => dot.classList.remove("filled"));
+        lockInput.focus();
+      }
+
+      function restartFromUi() {
+        closeAllUiWindows();
+        closeStartMenu();
+        powerOff.classList.remove("active");
+        lockReturnStage = "terminal";
+        bootReturnStage = "desktop";
+        resetBios();
+      }
+
+      function shutdownFromUi() {
+        closeAllUiWindows();
+        closeStartMenu();
+        powerOff.classList.remove("active");
+        lockReturnStage = "terminal";
+        bootReturnStage = "desktop";
+        resetBios();
+      }
+
+      function enterDesktopUi() {
+        closeAllUiWindows();
+        termStage.classList.remove("active", "term-window-mode");
+        termStage.hidden = true;
+        termStage.style.display = "none";
+        termStage.style.position = "";
+        showStage("desktopStage", "desktop");
+        updateDesktopClock();
+      }
+
+      function enterTerminalFullscreenUi() {
+        closeAllUiWindows();
+        // The base code does not use a crtScreen wrapper; the stage can
+        // safely live directly under body because .stage is position:fixed.
+        if (termStage.parentElement !== document.body) {
+          document.body.appendChild(termStage);
+        }
+        termStage.hidden = false;
+        termStage.classList.remove("term-window-mode");
+        termStage.style.display = "";
+        termStage.style.position = "";
+        showStage("termStage", "terminal");
+        resizeTermPlasma();
+        updateTermLiveStatus();
+        cmdInput.focus();
+      }
+
+      /* ===== UI KEY ROUTING: F11 switches terminal <-> desktop ===== */
+      let f11HandledAt = 0;
+      function handleUiF11(e) {
+        if (e.key !== "F11" && e.code !== "F11" && e.keyCode !== 122) return;
+        const now = Date.now();
+        // Prevent keydown + keyup from toggling twice. Also makes the handler
+        // resilient to browsers that expose F11 through only one event.
+        if (now - f11HandledAt < 300) return;
+        f11HandledAt = now;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        if (
+          CURRENT_STAGE === "desktop" ||
+          desktopStage?.classList.contains("active")
+        ) {
+          enterTerminalFullscreenUi();
+        } else if (
+          CURRENT_STAGE === "terminal" ||
+          termStage?.classList.contains("active")
+        ) {
+          enterDesktopUi();
+        }
+      }
+      window.addEventListener("keydown", handleUiF11, true);
+      window.addEventListener("keyup", handleUiF11, true);
+
+      /* ===== TERMINAL WINDOW: preserve the original terminal shortcuts ===== */
+      document.addEventListener("keydown", (e) => {
+        if (CURRENT_STAGE !== "desktop" || !openWindows.terminal || !cmdInput)
+          return;
+
+        const konamiKey = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+        konamiBuffer.push(konamiKey);
+        if (konamiBuffer.length > KONAMI_SEQUENCE.length) konamiBuffer.shift();
+        if (
+          konamiBuffer.length === KONAMI_SEQUENCE.length &&
+          konamiBuffer.every((k, idx) => k === KONAMI_SEQUENCE[idx])
+        ) {
+          konamiBuffer = [];
+          triggerKonami();
+        }
+
+        if (
+          e.key.toLowerCase() === ";" &&
+          !e.ctrlKey &&
+          !e.altKey &&
+          !e.metaKey &&
+          document.activeElement === cmdInput &&
+          cmdInput.value === ""
+        ) {
+          e.preventDefault();
+          showLock();
+        }
+      });
+
+      /* ===== DESKTOP F12 -> ORIGINAL BIOS ===== */
+      document.addEventListener("keydown", (e) => {
+        if (
+          e.key === "F12" &&
+          (CURRENT_STAGE === "terminal" || CURRENT_STAGE === "desktop")
+        ) {
+          e.preventDefault();
+          beepEsc();
+          closeAllUiWindows();
+          lockReturnStage = "terminal";
+          bootReturnStage = "terminal";
+          resetBios();
+        }
+      });
+
+      /* ===== PIN -> ORIGINAL TERMINAL (not desktop) ===== */
 
       /* ============ START ============ */
       typeBiosLine();
