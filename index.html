@@ -1989,9 +1989,79 @@
         padding: 0;
         overflow: hidden;
       }
+
+      /* ===== CRT SWITCH TRANSITION ===== */
+
+      #crtSwitchOverlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        background: #000;
+      }
+
+      #crtSwitchOverlay.active {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .crt-switch-loader {
+        width: min(300px, 70vw);
+        text-align: center;
+        color: #f5f0e6;
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      .crt-switch-logo {
+        font-size: clamp(20px, 2.1vw, 30px);
+        letter-spacing: 0.22em;
+        margin-bottom: 20px;
+      }
+
+      #crtSwitchLabel {
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        margin-bottom: 7px;
+      }
+
+      #crtSwitchPercent {
+        font-size: 16px;
+        letter-spacing: 0.08em;
+        margin-bottom: 9px;
+      }
+
+      .crt-switch-progress {
+        width: 100%;
+        height: 16px;
+        border: 1px solid rgba(245, 240, 230, 0.8);
+        padding: 3px;
+        box-sizing: border-box;
+      }
+
+      #crtSwitchProgressBar {
+        width: 0%;
+        height: 100%;
+        background: #f5f0e6;
+        transform-origin: left center;
+      }
     </style>
   </head>
   <body>
+    <div id="crtSwitchOverlay" aria-hidden="true">
+      <div class="crt-switch-loader">
+        <div class="crt-switch-logo">NISA-OS</div>
+        <div id="crtSwitchLabel">SWITCHING...</div>
+        <div id="crtSwitchPercent">0%</div>
+        <div class="crt-switch-progress">
+          <div id="crtSwitchProgressBar"></div>
+        </div>
+      </div>
+    </div>
     <div id="crtOverlay"></div>
 
     <!-- BIOS -->
@@ -5090,7 +5160,7 @@
           const verdict = host.querySelector("#uiQuizVerdict");
           if (isCorrect) {
             quizState.correctCount++;
-            verdict.textContent = "Benar";
+            verdict.textContent = "Benar! ❤️";
             verdict.className = "quiz-verdict ok";
           } else {
             verdict.textContent = "Kurang tepat, tapi lanjut aja dulu.";
@@ -5465,31 +5535,81 @@
         resetBios();
       }
 
+      let crtSwitchBusy = false;
+
+      function runCrtSwitch(target) {
+        if (crtSwitchBusy) return;
+        crtSwitchBusy = true;
+
+        const overlay = document.getElementById("crtSwitchOverlay");
+        const label = document.getElementById("crtSwitchLabel");
+        const percent = document.getElementById("crtSwitchPercent");
+        const progress = document.getElementById("crtSwitchProgressBar");
+
+        label.textContent =
+          target === "desktop"
+            ? "SWITCHING TO UI..."
+            : "RETURNING TO TERMINAL...";
+        percent.textContent = "0%";
+        progress.style.width = "0%";
+
+        overlay.classList.add("active");
+
+        let value = 0;
+        const startedAt = performance.now();
+        const duration = 700;
+
+        function tick(now) {
+          const elapsed = now - startedAt;
+          const ratio = Math.min(elapsed / duration, 1);
+          value = Math.round(ratio * 100);
+
+          percent.textContent = value + "%";
+          progress.style.width = value + "%";
+
+          if (ratio < 1) {
+            requestAnimationFrame(tick);
+            return;
+          }
+
+          if (target === "desktop") {
+            closeAllUiWindows();
+            termStage.classList.remove("active", "term-window-mode");
+            termStage.hidden = true;
+            termStage.style.display = "none";
+            termStage.style.position = "";
+            showStage("desktopStage", "desktop");
+            updateDesktopClock();
+          } else {
+            closeAllUiWindows();
+            if (termStage.parentElement !== document.body) {
+              document.body.appendChild(termStage);
+            }
+            termStage.hidden = false;
+            termStage.classList.remove("term-window-mode");
+            termStage.style.display = "";
+            termStage.style.position = "";
+            showStage("termStage", "terminal");
+            resizeTermPlasma();
+            updateTermLiveStatus();
+            cmdInput.focus();
+          }
+
+          setTimeout(() => {
+            overlay.classList.remove("active");
+            crtSwitchBusy = false;
+          }, 120);
+        }
+
+        requestAnimationFrame(tick);
+      }
+
       function enterDesktopUi() {
-        closeAllUiWindows();
-        termStage.classList.remove("active", "term-window-mode");
-        termStage.hidden = true;
-        termStage.style.display = "none";
-        termStage.style.position = "";
-        showStage("desktopStage", "desktop");
-        updateDesktopClock();
+        runCrtSwitch("desktop");
       }
 
       function enterTerminalFullscreenUi() {
-        closeAllUiWindows();
-        // The base code does not use a crtScreen wrapper; the stage can
-        // safely live directly under body because .stage is position:fixed.
-        if (termStage.parentElement !== document.body) {
-          document.body.appendChild(termStage);
-        }
-        termStage.hidden = false;
-        termStage.classList.remove("term-window-mode");
-        termStage.style.display = "";
-        termStage.style.position = "";
-        showStage("termStage", "terminal");
-        resizeTermPlasma();
-        updateTermLiveStatus();
-        cmdInput.focus();
+        runCrtSwitch("terminal");
       }
 
       /* ===== UI KEY ROUTING: F11 switches terminal <-> desktop ===== */
@@ -5503,6 +5623,8 @@
         f11HandledAt = now;
         e.preventDefault();
         e.stopImmediatePropagation();
+
+        if (crtSwitchBusy) return;
 
         if (
           CURRENT_STAGE === "desktop" ||
